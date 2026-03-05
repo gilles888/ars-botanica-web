@@ -1,0 +1,17 @@
+# Angular
+/dist
+/node_modules
+/.angular
+/.cache
+
+# Environment (keep tracked for this project)
+# src/environments/environment.ts
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
