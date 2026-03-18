@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
@@ -7,6 +7,8 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
 import { DropdownModule } from 'primeng/dropdown';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-contact',
@@ -14,7 +16,7 @@ import { MessageService } from 'primeng/api';
   imports: [
     CommonModule, FormsModule,
     ButtonModule, InputTextModule, InputTextareaModule,
-    DropdownModule, ToastModule
+    DropdownModule, ToastModule, TranslateModule
   ],
   providers: [MessageService],
   template: `
@@ -24,11 +26,9 @@ import { MessageService } from 'primeng/api';
       <!-- Hero -->
       <section class="bg-white border-b border-gray-100 py-16">
         <div class="container-custom text-center">
-          <p class="text-rose-accent uppercase tracking-widest text-sm font-semibold mb-4">Nous écrire</p>
-          <h1 class="font-heading text-5xl text-charcoal font-bold mb-4">Contactez-nous</h1>
-          <p class="text-gray-500 text-lg max-w-lg mx-auto">
-            Une question, un projet floral, un devis ? Nous vous répondons sous 24h.
-          </p>
+          <p class="text-rose-accent uppercase tracking-widest text-sm font-semibold mb-4">{{ 'contact.eyebrow' | translate }}</p>
+          <h1 class="font-heading text-5xl text-charcoal font-bold mb-4">{{ 'contact.title' | translate }}</h1>
+          <p class="text-gray-500 text-lg max-w-lg mx-auto">{{ 'contact.subtitle' | translate }}</p>
         </div>
       </section>
 
@@ -43,8 +43,8 @@ import { MessageService } from 'primeng/api';
                 <i [class]="info.icon + ' text-primary-green text-lg'"></i>
               </div>
               <div>
-                <h3 class="font-semibold text-charcoal mb-1">{{ info.title }}</h3>
-                <p class="text-gray-500 text-sm leading-relaxed" [innerHTML]="info.content"></p>
+                <h3 class="font-semibold text-charcoal mb-1">{{ info.titleKey | translate }}</h3>
+                <p class="text-gray-500 text-sm leading-relaxed" [innerHTML]="info.contentKey | translate"></p>
               </div>
             </div>
 
@@ -68,69 +68,45 @@ import { MessageService } from 'primeng/api';
           <!-- Form -->
           <div class="lg:col-span-2">
             <div class="bg-white rounded-2xl p-8 shadow-sm">
-              <h2 class="font-heading text-2xl text-charcoal mb-6">Envoyez-nous un message</h2>
+              <h2 class="font-heading text-2xl text-charcoal mb-6">{{ 'contact.form_title' | translate }}</h2>
 
               <form (ngSubmit)="sendMessage()" class="space-y-5">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div class="flex flex-col gap-2">
-                    <label class="text-sm font-medium text-charcoal">Prénom *</label>
-                    <input
-                      pInputText
-                      type="text"
-                      [(ngModel)]="form.firstName"
-                      name="firstName"
-                      placeholder="Marie"
-                      required
-                      class="rounded-xl"
-                    />
+                    <label class="text-sm font-medium text-charcoal">{{ 'contact.form_firstname' | translate }}</label>
+                    <input pInputText type="text" [(ngModel)]="form.firstName" name="firstName" placeholder="Marie" required class="rounded-xl" />
                   </div>
                   <div class="flex flex-col gap-2">
-                    <label class="text-sm font-medium text-charcoal">Nom *</label>
-                    <input
-                      pInputText
-                      type="text"
-                      [(ngModel)]="form.lastName"
-                      name="lastName"
-                      placeholder="Dupont"
-                      required
-                      class="rounded-xl"
-                    />
+                    <label class="text-sm font-medium text-charcoal">{{ 'contact.form_lastname' | translate }}</label>
+                    <input pInputText type="text" [(ngModel)]="form.lastName" name="lastName" placeholder="Dupont" required class="rounded-xl" />
                   </div>
                 </div>
 
                 <div class="flex flex-col gap-2">
-                  <label class="text-sm font-medium text-charcoal">Email *</label>
-                  <input
-                    pInputText
-                    type="email"
-                    [(ngModel)]="form.email"
-                    name="email"
-                    placeholder="marie@exemple.fr"
-                    required
-                    class="rounded-xl"
-                  />
+                  <label class="text-sm font-medium text-charcoal">{{ 'contact.form_email' | translate }}</label>
+                  <input pInputText type="email" [(ngModel)]="form.email" name="email" placeholder="marie@exemple.fr" required class="rounded-xl" />
                 </div>
 
                 <div class="flex flex-col gap-2">
-                  <label class="text-sm font-medium text-charcoal">Sujet</label>
+                  <label class="text-sm font-medium text-charcoal">{{ 'contact.form_subject' | translate }}</label>
                   <p-dropdown
                     [options]="subjectOptions"
                     [(ngModel)]="form.subject"
                     name="subject"
                     optionLabel="label"
                     optionValue="value"
-                    placeholder="Sélectionnez un sujet"
+                    [placeholder]="'contact.form_subject_placeholder' | translate"
                     styleClass="w-full rounded-xl"
                   ></p-dropdown>
                 </div>
 
                 <div class="flex flex-col gap-2">
-                  <label class="text-sm font-medium text-charcoal">Message *</label>
+                  <label class="text-sm font-medium text-charcoal">{{ 'contact.form_message' | translate }}</label>
                   <textarea
                     pInputTextarea
                     [(ngModel)]="form.message"
                     name="message"
-                    placeholder="Décrivez votre projet ou posez votre question..."
+                    [placeholder]="'contact.form_message_placeholder' | translate"
                     rows="5"
                     required
                     class="rounded-xl w-full resize-none"
@@ -138,17 +114,17 @@ import { MessageService } from 'primeng/api';
                   ></textarea>
                 </div>
 
-                <!-- Event details (if wedding/event selected) -->
+                <!-- Event details -->
                 <div *ngIf="form.subject === 'mariage' || form.subject === 'evenement'"
                   class="bg-green-50 rounded-xl p-5">
-                  <p class="text-sm font-medium text-primary-green mb-3">Détails de l'événement</p>
+                  <p class="text-sm font-medium text-primary-green mb-3">{{ 'contact.form_event_details' | translate }}</p>
                   <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="flex flex-col gap-1">
-                      <label class="text-xs text-gray-500">Date envisagée</label>
+                      <label class="text-xs text-gray-500">{{ 'contact.form_event_date' | translate }}</label>
                       <input pInputText type="date" [(ngModel)]="form.eventDate" name="eventDate" class="rounded-lg text-sm" />
                     </div>
                     <div class="flex flex-col gap-1">
-                      <label class="text-xs text-gray-500">Budget approximatif</label>
+                      <label class="text-xs text-gray-500">{{ 'contact.form_budget' | translate }}</label>
                       <input pInputText type="text" [(ngModel)]="form.budget" name="budget" placeholder="ex: 500–1000€" class="rounded-lg text-sm" />
                     </div>
                   </div>
@@ -157,7 +133,7 @@ import { MessageService } from 'primeng/api';
                 <button
                   pButton
                   type="submit"
-                  label="Envoyer le message"
+                  [label]="'contact.form_submit' | translate"
                   icon="pi pi-send"
                   iconPos="right"
                   [loading]="sending"
@@ -165,9 +141,7 @@ import { MessageService } from 'primeng/api';
                   style="background: #5a8a4a; border: none; border-radius: 2rem; padding: 0.9rem; font-size: 1rem;">
                 </button>
 
-                <p class="text-xs text-gray-400 text-center">
-                  Nous vous répondrons sous 24h ouvrées. Vos données restent confidentielles.
-                </p>
+                <p class="text-xs text-gray-400 text-center">{{ 'contact.form_privacy' | translate }}</p>
               </form>
             </div>
           </div>
@@ -178,19 +152,19 @@ import { MessageService } from 'primeng/api';
       <section class="section-padding bg-white">
         <div class="container-custom max-w-3xl">
           <div class="text-center mb-12">
-            <h2 class="font-heading text-4xl text-charcoal mb-3">Questions fréquentes</h2>
+            <h2 class="font-heading text-4xl text-charcoal mb-3">{{ 'contact.faq_title' | translate }}</h2>
           </div>
           <div class="space-y-4">
             <div *ngFor="let faq of faqs"
               class="bg-cream rounded-2xl p-6 cursor-pointer hover:bg-green-50 transition-colors"
               (click)="faq.open = !faq.open">
               <div class="flex items-center justify-between">
-                <h3 class="font-semibold text-charcoal">{{ faq.question }}</h3>
+                <h3 class="font-semibold text-charcoal">{{ faq.questionKey | translate }}</h3>
                 <i class="pi text-primary-green transition-transform"
                   [class.pi-chevron-down]="!faq.open"
                   [class.pi-chevron-up]="faq.open"></i>
               </div>
-              <p *ngIf="faq.open" class="text-gray-600 text-sm mt-3 leading-relaxed">{{ faq.answer }}</p>
+              <p *ngIf="faq.open" class="text-gray-600 text-sm mt-3 leading-relaxed">{{ faq.answerKey | translate }}</p>
             </div>
           </div>
         </div>
@@ -198,93 +172,73 @@ import { MessageService } from 'primeng/api';
     </div>
   `
 })
-export class ContactComponent {
+export class ContactComponent implements OnInit, OnDestroy {
   sending = false;
 
   form = {
-    firstName: '',
-    lastName: '',
-    email: '',
-    subject: '',
-    message: '',
-    eventDate: '',
-    budget: ''
+    firstName: '', lastName: '', email: '', subject: '',
+    message: '', eventDate: '', budget: ''
   };
 
   contactInfo = [
-    {
-      icon: 'pi pi-map-marker',
-      title: 'Adresse',
-      content: '12 Rue des Fleurs<br>75004 Paris — Le Marais'
-    },
-    {
-      icon: 'pi pi-phone',
-      title: 'Téléphone',
-      content: '+33 1 42 00 00 00<br><span class="text-xs">Mar–Sam : 9h–19h</span>'
-    },
-    {
-      icon: 'pi pi-envelope',
-      title: 'Email',
-      content: 'bonjour@ars-botanica.fr'
-    },
-    {
-      icon: 'pi pi-clock',
-      title: 'Horaires',
-      content: 'Mardi–Samedi : 9h–19h<br>Dimanche : 9h–13h<br>Lundi : Fermé'
-    }
+    { icon: 'pi pi-map-marker', titleKey: 'contact.info_address_title', contentKey: 'contact.info_address_content' },
+    { icon: 'pi pi-phone', titleKey: 'contact.info_phone_title', contentKey: 'contact.info_phone_content' },
+    { icon: 'pi pi-envelope', titleKey: 'contact.info_email_title', contentKey: 'contact.info_email_content' },
+    { icon: 'pi pi-clock', titleKey: 'contact.info_hours_title', contentKey: 'contact.info_hours_content' },
   ];
 
-  subjectOptions = [
-    { label: 'Commande bouquet', value: 'bouquet' },
-    { label: 'Fleurs de mariage', value: 'mariage' },
-    { label: 'Décoration événement', value: 'evenement' },
-    { label: 'Abonnement floral', value: 'abonnement' },
-    { label: 'Renseignement général', value: 'general' },
-    { label: 'Autre', value: 'autre' },
-  ];
+  subjectOptions: { label: string; value: string }[] = [];
 
   faqs = [
-    {
-      question: 'Combien de temps à l\'avance dois-je commander ?',
-      answer: 'Pour les bouquets standards, 48h suffisent. Pour les mariages et événements, nous recommandons 3 à 6 mois à l\'avance pour s\'assurer de la disponibilité.',
-      open: false
-    },
-    {
-      question: 'Livrez-vous à domicile ?',
-      answer: 'Oui, nous livrons dans tout Paris et la petite couronne. La livraison est offerte pour toute commande supérieure à 80€. Pour les grandes distances, nous étudions chaque demande au cas par cas.',
-      open: false
-    },
-    {
-      question: 'Proposez-vous des créations sur mesure ?',
-      answer: 'Absolument ! C\'est même notre spécialité. Contactez-nous avec vos couleurs, l\'occasion et votre budget, et nous créerons quelque chose d\'unique rien que pour vous.',
-      open: false
-    },
-    {
-      question: 'Proposez-vous des ateliers floraux ?',
-      answer: 'Oui, nous organisons des ateliers en boutique les samedis matin. Consultez notre page Instagram pour les prochaines dates ou écrivez-nous pour une session privée.',
-      open: false
-    }
+    { questionKey: 'contact.faq1_q', answerKey: 'contact.faq1_a', open: false },
+    { questionKey: 'contact.faq2_q', answerKey: 'contact.faq2_a', open: false },
+    { questionKey: 'contact.faq3_q', answerKey: 'contact.faq3_a', open: false },
+    { questionKey: 'contact.faq4_q', answerKey: 'contact.faq4_a', open: false },
   ];
 
-  constructor(private messageService: MessageService) {}
+  private langSub = new Subscription();
+
+  constructor(
+    private messageService: MessageService,
+    private translate: TranslateService
+  ) {}
+
+  ngOnInit() {
+    this.buildSubjectOptions();
+    this.langSub.add(this.translate.onLangChange.subscribe(() => this.buildSubjectOptions()));
+  }
+
+  ngOnDestroy() {
+    this.langSub.unsubscribe();
+  }
+
+  buildSubjectOptions() {
+    this.subjectOptions = [
+      { label: this.translate.instant('contact.subject_bouquet'), value: 'bouquet' },
+      { label: this.translate.instant('contact.subject_wedding'), value: 'mariage' },
+      { label: this.translate.instant('contact.subject_event'), value: 'evenement' },
+      { label: this.translate.instant('contact.subject_subscription'), value: 'abonnement' },
+      { label: this.translate.instant('contact.subject_general'), value: 'general' },
+      { label: this.translate.instant('contact.subject_other'), value: 'autre' },
+    ];
+  }
 
   sendMessage() {
     if (!this.form.firstName || !this.form.email || !this.form.message) {
       this.messageService.add({
         severity: 'warn',
-        summary: 'Champs requis',
-        detail: 'Veuillez remplir tous les champs obligatoires.'
+        summary: this.translate.instant('contact.toast_required'),
+        detail: this.translate.instant('contact.toast_required_detail')
       });
       return;
     }
-
     this.sending = true;
     setTimeout(() => {
       this.sending = false;
       this.messageService.add({
         severity: 'success',
-        summary: 'Message envoyé !',
-        detail: 'Merci ! Nous vous répondrons dans les 24h.'
+        summary: this.translate.instant('contact.toast_sent'),
+        detail: this.translate.instant('contact.toast_sent_detail')
       });
       this.form = { firstName: '', lastName: '', email: '', subject: '', message: '', eventDate: '', budget: '' };
     }, 1500);

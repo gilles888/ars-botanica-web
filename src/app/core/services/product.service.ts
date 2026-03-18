@@ -1,14 +1,11 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { Category, Product, ProductCategory, Testimonial } from '../models/product.model';
-import { environment } from '../../../environments/environment';
+import { Category, Product, ProductCategory, ProductSize, ProductVariant, Testimonial } from '../models/product.model';
+import { ProduitsService, CatgoriesService, ProductResponse, CategoryResponse } from '@core/api/generated';
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {
-  private api = environment.apiUrl;
-
   // Fallback testimonials (not from API)
   private testimonials: Testimonial[] = [
     {
@@ -45,24 +42,33 @@ export class ProductService {
     }
   ];
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private produitsService: ProduitsService,
+    private catgoriesService: CatgoriesService
+  ) {}
 
   getProducts(): Observable<Product[]> {
-    return this.http.get<Product[]>(`${this.api}/products`);
+    return this.produitsService.getAll1().pipe(
+      map(products => products.map(p => this.mapToProduct(p)))
+    );
   }
 
   getFeaturedProducts(): Observable<Product[]> {
-    return this.http.get<Product[]>(`${this.api}/products/featured`);
+    return this.produitsService.getFeatured().pipe(
+      map(products => products.map(p => this.mapToProduct(p)))
+    );
   }
 
   getProductBySlug(slug: string): Observable<Product | undefined> {
-    return this.http.get<Product>(`${this.api}/products/slug/${slug}`).pipe(
+    return this.produitsService.getBySlug(slug).pipe(
+      map(p => this.mapToProduct(p)),
       catchError(() => of(undefined))
     );
   }
 
   getProductById(id: number): Observable<Product | undefined> {
-    return this.http.get<Product>(`${this.api}/products/${id}`).pipe(
+    return this.produitsService.getById1(id).pipe(
+      map(p => this.mapToProduct(p)),
       catchError(() => of(undefined))
     );
   }
@@ -78,7 +84,9 @@ export class ProductService {
   }
 
   getCategories(): Observable<Category[]> {
-    return this.http.get<Category[]>(`${this.api}/categories`);
+    return this.catgoriesService.getAll3().pipe(
+      map(categories => categories.map(c => this.mapToCategory(c)))
+    );
   }
 
   getTestimonials(): Observable<Testimonial[]> {
@@ -86,8 +94,9 @@ export class ProductService {
   }
 
   searchProducts(query: string): Observable<Product[]> {
-    const params = new HttpParams().set('q', query);
-    return this.http.get<Product[]>(`${this.api}/products/search`, { params });
+    return this.produitsService.search(query).pipe(
+      map(products => products.map(p => this.mapToProduct(p)))
+    );
   }
 
   filterProducts(params: {
@@ -96,19 +105,47 @@ export class ProductService {
     maxPrice?: number;
     sortBy?: string;
   }): Observable<Product[]> {
-    let httpParams = new HttpParams();
-    if (params.category && params.category !== 'all') {
-      httpParams = httpParams.set('category', params.category);
-    }
-    if (params.minPrice !== undefined) {
-      httpParams = httpParams.set('minPrice', params.minPrice.toString());
-    }
-    if (params.maxPrice !== undefined) {
-      httpParams = httpParams.set('maxPrice', params.maxPrice.toString());
-    }
-    if (params.sortBy) {
-      httpParams = httpParams.set('sortBy', params.sortBy);
-    }
-    return this.http.get<Product[]>(`${this.api}/products/filter`, { params: httpParams });
+    const category = params.category && params.category !== 'all'
+      ? params.category.toUpperCase() as 'BOUQUETS' | 'COMPOSITIONS' | 'PLANTES' | 'MARIAGES' | 'DEUIL' | 'SEASONAL'
+      : undefined;
+    return this.produitsService.filter(category, params.minPrice, params.maxPrice).pipe(
+      map(products => products.map(p => this.mapToProduct(p)))
+    );
+  }
+
+  private mapToProduct(p: ProductResponse): Product {
+    return {
+      id: p.id ?? 0,
+      name: p.name ?? '',
+      slug: p.slug ?? '',
+      description: p.description ?? '',
+      shortDescription: p.shortDescription ?? '',
+      variants: (p.variants ?? []).map(v => ({
+        id: v.id!,
+        size: v.size as ProductSize,
+        price: Number(v.price)
+      })) as ProductVariant[],
+      images: p.images ?? [],
+      category: (p.category?.toLowerCase() ?? '') as ProductCategory,
+      tags: p.tags ?? [],
+      rating: p.rating ?? 0,
+      reviewCount: p.reviewCount ?? 0,
+      isNew: p.isNew ?? false,
+      isFeatured: p.isFeatured ?? false,
+      isSeasonal: p.isSeasonal ?? false,
+      inStock: p.inStock ?? true,
+    };
+  }
+
+  private mapToCategory(c: CategoryResponse): Category {
+    return {
+      id: c.id ?? '',
+      name: c.name ?? '',
+      slug: c.slug ?? '',
+      description: c.description ?? '',
+      icon: c.icon ?? '',
+      image: c.image ?? '',
+      productCount: c.productCount ?? 0,
+    };
   }
 }

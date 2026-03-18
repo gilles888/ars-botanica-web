@@ -6,12 +6,13 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, ButtonModule, InputTextModule, ToastModule],
+  imports: [CommonModule, FormsModule, RouterLink, ButtonModule, InputTextModule, ToastModule, TranslateModule],
   providers: [MessageService],
   template: `
     <p-toast position="bottom-right"></p-toast>
@@ -26,8 +27,8 @@ import { AuthService } from '../../core/services/auth.service';
             </div>
             <span class="font-heading text-2xl font-semibold text-charcoal">Ars <span class="text-primary-green">Botanica</span></span>
           </a>
-          <h1 class="font-heading text-3xl text-charcoal font-bold">Créer un compte</h1>
-          <p class="text-gray-500 mt-2">Rejoignez la communauté Ars Botanica</p>
+          <h1 class="font-heading text-3xl text-charcoal font-bold">{{ 'auth.register_title' | translate }}</h1>
+          <p class="text-gray-500 mt-2">{{ 'auth.register_subtitle' | translate }}</p>
         </div>
 
         <!-- Form -->
@@ -35,30 +36,30 @@ import { AuthService } from '../../core/services/auth.service';
           <div class="space-y-5">
             <div class="grid grid-cols-2 gap-4">
               <div class="flex flex-col gap-2">
-                <label class="text-sm font-medium text-charcoal">Prénom</label>
+                <label class="text-sm font-medium text-charcoal">{{ 'auth.firstname' | translate }}</label>
                 <input pInputText [(ngModel)]="firstName" placeholder="Marie" class="rounded-xl w-full" />
               </div>
               <div class="flex flex-col gap-2">
-                <label class="text-sm font-medium text-charcoal">Nom</label>
+                <label class="text-sm font-medium text-charcoal">{{ 'auth.lastname' | translate }}</label>
                 <input pInputText [(ngModel)]="lastName" placeholder="Dupont" class="rounded-xl w-full" />
               </div>
             </div>
             <div class="flex flex-col gap-2">
-              <label class="text-sm font-medium text-charcoal">Email</label>
+              <label class="text-sm font-medium text-charcoal">{{ 'auth.email' | translate }}</label>
               <input pInputText type="email" [(ngModel)]="email" placeholder="marie@exemple.fr" class="rounded-xl w-full" />
             </div>
             <div class="flex flex-col gap-2">
-              <label class="text-sm font-medium text-charcoal">Mot de passe</label>
+              <label class="text-sm font-medium text-charcoal">{{ 'auth.password' | translate }}</label>
               <input pInputText type="password" [(ngModel)]="password" placeholder="••••••••" class="rounded-xl w-full" />
             </div>
             <div class="flex flex-col gap-2">
-              <label class="text-sm font-medium text-charcoal">Confirmer le mot de passe</label>
+              <label class="text-sm font-medium text-charcoal">{{ 'auth.confirm_password' | translate }}</label>
               <input pInputText type="password" [(ngModel)]="confirm" placeholder="••••••••" class="rounded-xl w-full" />
             </div>
           </div>
 
           <button pButton
-            label="Créer mon compte"
+            [label]="'auth.register_btn' | translate"
             icon="pi pi-user-plus"
             [loading]="loading"
             (click)="submit()"
@@ -67,8 +68,8 @@ import { AuthService } from '../../core/services/auth.service';
           </button>
 
           <p class="text-center text-sm text-gray-500 mt-5">
-            Déjà un compte ?
-            <a routerLink="/connexion" class="text-primary-green font-medium hover:underline ml-1">Se connecter</a>
+            {{ 'auth.have_account' | translate }}
+            <a routerLink="/connexion" class="text-primary-green font-medium hover:underline ml-1">{{ 'auth.sign_in' | translate }}</a>
           </p>
         </div>
 
@@ -87,27 +88,44 @@ export class RegisterComponent {
   constructor(
     private authService: AuthService,
     private messageService: MessageService,
-    private router: Router
+    private router: Router,
+    private translate: TranslateService
   ) {}
 
   submit() {
     if (!this.firstName || !this.lastName || !this.email || !this.password) {
-      this.messageService.add({ severity: 'warn', summary: 'Champs requis', detail: 'Veuillez remplir tous les champs.' });
+      this.messageService.add({
+        severity: 'warn',
+        summary: this.translate.instant('auth.toast_required'),
+        detail: this.translate.instant('auth.toast_fill_all')
+      });
       return;
     }
     if (this.password !== this.confirm) {
-      this.messageService.add({ severity: 'warn', summary: 'Erreur', detail: 'Les mots de passe ne correspondent pas.' });
+      this.messageService.add({
+        severity: 'warn',
+        summary: this.translate.instant('auth.toast_error'),
+        detail: this.translate.instant('auth.toast_password_mismatch')
+      });
       return;
     }
     this.loading = true;
     this.authService.register(this.firstName, this.lastName, this.email, this.password).subscribe({
       next: () => {
-        this.messageService.add({ severity: 'success', summary: 'Compte créé', detail: 'Bienvenue chez Ars Botanica !' });
+        this.messageService.add({
+          severity: 'success',
+          summary: this.translate.instant('auth.toast_account_created'),
+          detail: this.translate.instant('auth.toast_welcome')
+        });
         setTimeout(() => this.router.navigate(['/connexion']), 1500);
       },
       error: () => {
         this.loading = false;
-        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Impossible de créer le compte. Cet email est peut-être déjà utilisé.' });
+        this.messageService.add({
+          severity: 'error',
+          summary: this.translate.instant('auth.toast_error'),
+          detail: this.translate.instant('auth.toast_register_error')
+        });
       }
     });
   }

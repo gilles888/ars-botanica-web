@@ -1,11 +1,18 @@
+export type ProductSize = 'PETIT' | 'MOYEN' | 'GRAND';
+
+export interface ProductVariant {
+  id: number;
+  size: ProductSize;
+  price: number;
+}
+
 export interface Product {
   id: number;
   name: string;
   slug: string;
   description: string;
   shortDescription: string;
-  price: number;
-  originalPrice?: number;
+  variants: ProductVariant[];
   images: string[];
   category: ProductCategory;
   tags: string[];
@@ -45,4 +52,14 @@ export interface Testimonial {
   comment: string;
   occasion: string;
   date: string;
+}
+
+export function getStartingPrice(product: Product): number {
+  if (!product.variants?.length) return 0;
+  const petit = product.variants.find(v => v.size === 'PETIT');
+  return petit?.price ?? product.variants[0].price;
+}
+
+export function getVariantPrice(product: Product, size: ProductSize): number {
+  return product.variants?.find(v => v.size === size)?.price ?? 0;
 }

@@ -6,11 +6,12 @@ import { InputTextModule } from 'primeng/inputtext';
 import { FormsModule } from '@angular/forms';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-footer',
   standalone: true,
-  imports: [CommonModule, RouterLink, ButtonModule, InputTextModule, FormsModule, ToastModule],
+  imports: [CommonModule, RouterLink, ButtonModule, InputTextModule, FormsModule, ToastModule, TranslateModule],
   providers: [MessageService],
   template: `
     <p-toast></p-toast>
@@ -18,10 +19,10 @@ import { MessageService } from 'primeng/api';
       <!-- Newsletter band -->
       <div class="bg-primary-green py-12">
         <div class="container-custom text-center">
-          <p class="text-green-100 text-sm uppercase tracking-widest mb-2">Newsletter</p>
-          <h3 class="font-heading text-3xl text-white mb-3">Des fleurs dans votre boîte mail</h3>
+          <p class="text-green-100 text-sm uppercase tracking-widest mb-2">{{ 'footer.newsletter_label' | translate }}</p>
+          <h3 class="font-heading text-3xl text-white mb-3">{{ 'footer.newsletter_title' | translate }}</h3>
           <p class="text-green-100 mb-8 max-w-md mx-auto">
-            Recevez nos offres saisonnières, conseils floraux et inspirations en exclusivité.
+            {{ 'footer.newsletter_desc' | translate }}
           </p>
           <form (ngSubmit)="subscribe()" class="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
             <input
@@ -29,14 +30,14 @@ import { MessageService } from 'primeng/api';
               type="email"
               [(ngModel)]="email"
               name="email"
-              placeholder="votre@email.com"
+              [placeholder]="'footer.newsletter_placeholder' | translate"
               class="flex-1 rounded-full px-5 py-3 text-charcoal border-0 outline-none"
               style="background: white; color: #2d3748;"
             />
             <button
               pButton
               type="submit"
-              label="S'abonner"
+              [label]="'footer.newsletter_btn' | translate"
               style="background: #2d3748; border: none; border-radius: 2rem; padding: 0.75rem 1.75rem;"
             ></button>
           </form>
@@ -56,8 +57,7 @@ import { MessageService } from 'primeng/api';
               <span class="font-heading text-xl font-semibold">Ars Botanica</span>
             </div>
             <p class="text-gray-400 text-sm leading-relaxed mb-5">
-              Créations florales artisanales depuis 2012. Chaque bouquet est une œuvre unique,
-              réalisée avec passion et savoir-faire.
+              {{ 'footer.brand_desc' | translate }}
             </p>
             <div class="flex gap-3">
               <a *ngFor="let social of socials"
@@ -72,12 +72,12 @@ import { MessageService } from 'primeng/api';
 
           <!-- Navigation -->
           <div>
-            <h4 class="font-semibold text-white mb-4 uppercase tracking-wider text-xs">Navigation</h4>
+            <h4 class="font-semibold text-white mb-4 uppercase tracking-wider text-xs">{{ 'footer.navigation' | translate }}</h4>
             <ul class="space-y-2">
               <li *ngFor="let link of footerLinks">
                 <a [routerLink]="link.path"
                   class="text-gray-400 hover:text-white transition-colors text-sm">
-                  {{ link.label }}
+                  {{ link.labelKey | translate }}
                 </a>
               </li>
             </ul>
@@ -85,19 +85,19 @@ import { MessageService } from 'primeng/api';
 
           <!-- Services -->
           <div>
-            <h4 class="font-semibold text-white mb-4 uppercase tracking-wider text-xs">Services</h4>
+            <h4 class="font-semibold text-white mb-4 uppercase tracking-wider text-xs">{{ 'footer.services' | translate }}</h4>
             <ul class="space-y-2 text-gray-400 text-sm">
-              <li>Créations sur mesure</li>
-              <li>Décorations événementielles</li>
-              <li>Fleurs de mariage</li>
-              <li>Abonnement floral</li>
-              <li>Livraison à domicile</li>
+              <li>{{ 'footer.service_custom' | translate }}</li>
+              <li>{{ 'footer.service_events' | translate }}</li>
+              <li>{{ 'footer.service_wedding' | translate }}</li>
+              <li>{{ 'footer.service_subscription' | translate }}</li>
+              <li>{{ 'footer.service_delivery' | translate }}</li>
             </ul>
           </div>
 
           <!-- Contact -->
           <div>
-            <h4 class="font-semibold text-white mb-4 uppercase tracking-wider text-xs">Nous trouver</h4>
+            <h4 class="font-semibold text-white mb-4 uppercase tracking-wider text-xs">{{ 'footer.find_us' | translate }}</h4>
             <ul class="space-y-3 text-sm">
               <li class="flex items-start gap-3 text-gray-400">
                 <i class="pi pi-map-marker text-primary-green mt-0.5 flex-shrink-0"></i>
@@ -113,7 +113,7 @@ import { MessageService } from 'primeng/api';
               </li>
               <li class="flex items-start gap-3 text-gray-400">
                 <i class="pi pi-clock text-primary-green mt-0.5 flex-shrink-0"></i>
-                <span>Mar–Sam : 9h–19h<br>Dim : 9h–13h</span>
+                <span [innerHTML]="'footer.hours' | translate"></span>
               </li>
             </ul>
           </div>
@@ -124,11 +124,11 @@ import { MessageService } from 'primeng/api';
       <div class="border-t border-white/10">
         <div class="container-custom py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
           <p class="text-gray-500 text-xs">
-            © {{ currentYear }} Ars Botanica. Tous droits réservés.
+            © {{ currentYear }} Ars Botanica. {{ 'footer.copyright' | translate }}
           </p>
           <div class="flex gap-5 text-xs text-gray-500">
-            <a href="#" class="hover:text-white transition-colors">Mentions légales</a>
-            <a href="#" class="hover:text-white transition-colors">Politique de confidentialité</a>
+            <a href="#" class="hover:text-white transition-colors">{{ 'footer.legal' | translate }}</a>
+            <a href="#" class="hover:text-white transition-colors">{{ 'footer.privacy' | translate }}</a>
           </div>
         </div>
       </div>
@@ -146,20 +146,23 @@ export class FooterComponent {
   ];
 
   footerLinks = [
-    { label: 'Accueil', path: '/' },
-    { label: 'Boutique', path: '/boutique' },
-    { label: 'À propos', path: '/a-propos' },
-    { label: 'Contact', path: '/contact' },
+    { labelKey: 'nav.home', path: '/' },
+    { labelKey: 'nav.shop', path: '/boutique' },
+    { labelKey: 'nav.about', path: '/a-propos' },
+    { labelKey: 'nav.contact', path: '/contact' },
   ];
 
-  constructor(private messageService: MessageService) {}
+  constructor(
+    private messageService: MessageService,
+    private translate: TranslateService
+  ) {}
 
   subscribe() {
     if (this.email) {
       this.messageService.add({
         severity: 'success',
-        summary: 'Abonné !',
-        detail: 'Merci pour votre inscription à notre newsletter.'
+        summary: this.translate.instant('footer.subscribed'),
+        detail: this.translate.instant('footer.subscribed_detail')
       });
       this.email = '';
     }

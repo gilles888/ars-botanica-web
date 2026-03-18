@@ -8,6 +8,7 @@ import { RatingModule } from 'primeng/rating';
 import { TagModule } from 'primeng/tag';
 import { BadgeModule } from 'primeng/badge';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule } from '@ngx-translate/core';
 import { ProductService } from '../../core/services/product.service';
 import { Product, Category, Testimonial } from '../../core/models/product.model';
 
@@ -16,14 +17,14 @@ import { Product, Category, Testimonial } from '../../core/models/product.model'
   standalone: true,
   imports: [
     CommonModule, RouterLink, CarouselModule, CardModule,
-    ButtonModule, RatingModule, TagModule, BadgeModule, FormsModule
+    ButtonModule, RatingModule, TagModule, BadgeModule, FormsModule,
+    TranslateModule
   ],
   template: `
     <div class="page-enter">
 
       <!-- ── HERO ────────────────────────────────────────────────── -->
       <section class="relative min-h-screen flex items-center overflow-hidden bg-hero-pattern">
-        <!-- Background decoration -->
         <div class="absolute inset-0 overflow-hidden pointer-events-none">
           <div class="absolute -top-20 -right-20 w-96 h-96 rounded-full bg-rose-pastel/10 blur-3xl"></div>
           <div class="absolute bottom-10 -left-20 w-80 h-80 rounded-full bg-primary-500/10 blur-3xl"></div>
@@ -32,24 +33,23 @@ import { Product, Category, Testimonial } from '../../core/models/product.model'
         <div class="container-custom relative z-10 pt-20 pb-16">
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 
-            <!-- Text content -->
             <div class="text-left">
               <p class="text-primary-green uppercase tracking-widest text-sm font-semibold mb-4 flex items-center gap-2">
                 <span class="w-8 h-0.5 bg-primary-green inline-block"></span>
-                Art floral depuis 2012
+                {{ 'home.hero_eyebrow' | translate }}
               </p>
               <h1 class="font-heading text-5xl lg:text-6xl xl:text-7xl font-bold text-charcoal leading-tight mb-6">
-                Chaque fleur<br>
-                <span class="text-primary-green italic">raconte</span><br>
-                une histoire
+                {{ 'home.hero_h1_line1' | translate }}<br>
+                <span class="text-primary-green italic">{{ 'home.hero_h1_line2' | translate }}</span><br>
+                {{ 'home.hero_h1_line3' | translate }}
               </h1>
               <p class="text-lg text-gray-500 mb-10 max-w-md leading-relaxed">
-                Des créations florales artisanales, conçues avec passion pour sublimer chaque moment de votre vie.
+                {{ 'home.hero_desc' | translate }}
               </p>
               <div class="flex flex-wrap gap-4">
                 <a routerLink="/boutique">
                   <button pButton
-                    label="Découvrir la boutique"
+                    [label]="'home.hero_cta_shop' | translate"
                     icon="pi pi-arrow-right"
                     iconPos="right"
                     style="background: #5a8a4a; border: none; border-radius: 2rem; padding: 0.85rem 2rem; font-size: 1rem;">
@@ -57,18 +57,17 @@ import { Product, Category, Testimonial } from '../../core/models/product.model'
                 </a>
                 <a routerLink="/a-propos">
                   <button pButton
-                    label="Notre histoire"
+                    [label]="'home.hero_cta_about' | translate"
                     class="p-button-outlined"
                     style="border-color: #5a8a4a; color: #5a8a4a; border-radius: 2rem; padding: 0.85rem 2rem; font-size: 1rem;">
                   </button>
                 </a>
               </div>
 
-              <!-- Stats -->
               <div class="flex gap-10 mt-14 pt-10 border-t border-gray-200">
                 <div *ngFor="let stat of stats">
                   <div class="font-heading text-3xl font-bold text-primary-green">{{ stat.value }}</div>
-                  <div class="text-sm text-gray-500">{{ stat.label }}</div>
+                  <div class="text-sm text-gray-500">{{ stat.labelKey | translate }}</div>
                 </div>
               </div>
             </div>
@@ -83,20 +82,18 @@ import { Product, Category, Testimonial } from '../../core/models/product.model'
                 />
                 <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
               </div>
-              <!-- Floating badge -->
               <div class="absolute -bottom-6 -left-6 bg-white rounded-2xl shadow-xl p-4 flex items-center gap-3">
                 <div class="w-12 h-12 rounded-xl bg-rose-pastel/20 flex items-center justify-center">
                   <i class="pi pi-star-fill text-rose-pastel text-lg"></i>
                 </div>
                 <div>
                   <p class="font-semibold text-charcoal text-sm">4.9/5</p>
-                  <p class="text-xs text-gray-500">+500 avis clients</p>
+                  <p class="text-xs text-gray-500">{{ 'home.hero_badge_reviews' | translate }}</p>
                 </div>
               </div>
-              <!-- Floating category -->
               <div class="absolute top-6 -right-6 bg-primary-green text-white rounded-2xl shadow-xl p-4">
-                <p class="text-xs font-semibold uppercase tracking-wider opacity-80">Collection</p>
-                <p class="font-heading text-lg font-bold">Printemps</p>
+                <p class="text-xs font-semibold uppercase tracking-wider opacity-80">{{ 'home.hero_collection' | translate }}</p>
+                <p class="font-heading text-lg font-bold">{{ 'home.hero_season' | translate }}</p>
               </div>
             </div>
           </div>
@@ -107,9 +104,9 @@ import { Product, Category, Testimonial } from '../../core/models/product.model'
       <section class="section-padding bg-white">
         <div class="container-custom">
           <div class="text-center mb-14">
-            <p class="text-rose-accent uppercase tracking-widest text-sm font-semibold mb-3">Explorer</p>
-            <h2 class="font-heading text-4xl text-charcoal mb-4">Nos collections</h2>
-            <p class="text-gray-500 max-w-xl mx-auto">Chaque collection est une invitation à découvrir la beauté florale sous toutes ses formes.</p>
+            <p class="text-rose-accent uppercase tracking-widest text-sm font-semibold mb-3">{{ 'home.categories_eyebrow' | translate }}</p>
+            <h2 class="font-heading text-4xl text-charcoal mb-4">{{ 'home.categories_title' | translate }}</h2>
+            <p class="text-gray-500 max-w-xl mx-auto">{{ 'home.categories_desc' | translate }}</p>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -117,15 +114,11 @@ import { Product, Category, Testimonial } from '../../core/models/product.model'
               [routerLink]="['/boutique']"
               [queryParams]="{categorie: cat.slug}"
               class="group block rounded-2xl overflow-hidden relative aspect-[3/4] shadow-md hover:shadow-xl transition-all duration-300">
-              <img
-                [src]="cat.image"
-                [alt]="cat.name"
-                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-              />
+              <img [src]="cat.image" [alt]="cat.name" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
               <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
               <div class="absolute bottom-0 left-0 right-0 p-5">
                 <h3 class="font-heading text-xl text-white font-semibold">{{ cat.name }}</h3>
-                <p class="text-white/80 text-xs mt-1">{{ cat.productCount }} créations</p>
+                <p class="text-white/80 text-xs mt-1">{{ cat.productCount }} {{ 'home.creations_count' | translate }}</p>
               </div>
             </a>
           </div>
@@ -137,12 +130,12 @@ import { Product, Category, Testimonial } from '../../core/models/product.model'
         <div class="container-custom">
           <div class="flex items-end justify-between mb-14">
             <div>
-              <p class="text-primary-green uppercase tracking-widest text-sm font-semibold mb-3">Nos coups de cœur</p>
-              <h2 class="font-heading text-4xl text-charcoal">Créations vedettes</h2>
+              <p class="text-primary-green uppercase tracking-widest text-sm font-semibold mb-3">{{ 'home.featured_eyebrow' | translate }}</p>
+              <h2 class="font-heading text-4xl text-charcoal">{{ 'home.featured_title' | translate }}</h2>
             </div>
             <a routerLink="/boutique"
               class="hidden sm:flex items-center gap-2 text-primary-green font-medium hover:gap-3 transition-all text-sm">
-              Voir tout <i class="pi pi-arrow-right"></i>
+              {{ 'home.featured_see_all' | translate }} <i class="pi pi-arrow-right"></i>
             </a>
           </div>
 
@@ -158,21 +151,16 @@ import { Product, Category, Testimonial } from '../../core/models/product.model'
               <div class="p-3">
                 <div class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group cursor-pointer"
                   [routerLink]="['/boutique', product.slug]">
-                  <!-- Image -->
                   <div class="relative overflow-hidden aspect-[4/3]">
-                    <img
-                      [src]="product.images[0]"
-                      [alt]="product.name"
-                      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
+                    <img [src]="product.images[0]" [alt]="product.name"
+                      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                     <div class="absolute top-3 left-3 flex gap-2">
-                      <p-tag *ngIf="product.isNew" value="Nouveau" class="tag-new"
+                      <p-tag *ngIf="product.isNew" [value]="'home.product_new' | translate"
                         styleClass="bg-rose-pastel text-white text-xs rounded-full px-2 py-1"></p-tag>
-                      <p-tag *ngIf="product.isSeasonal" value="Saisonnier"
+                      <p-tag *ngIf="product.isSeasonal" [value]="'home.product_seasonal' | translate"
                         styleClass="bg-primary-green text-white text-xs rounded-full px-2 py-1"></p-tag>
                     </div>
                   </div>
-                  <!-- Info -->
                   <div class="p-4">
                     <p class="text-xs text-gray-400 uppercase tracking-wider mb-1 capitalize">{{ product.category }}</p>
                     <h3 class="font-heading text-lg text-charcoal font-semibold mb-2 group-hover:text-primary-green transition-colors">
@@ -189,7 +177,7 @@ import { Product, Category, Testimonial } from '../../core/models/product.model'
                         <span *ngIf="product.originalPrice" class="text-sm text-gray-400 line-through">{{ product.originalPrice }}€</span>
                       </div>
                       <button pButton
-                        label="Voir"
+                        [label]="'home.product_see' | translate"
                         icon="pi pi-eye"
                         class="p-button-sm p-button-outlined"
                         style="border-color: #5a8a4a; color: #5a8a4a; border-radius: 1.5rem; font-size: 0.8rem;">
@@ -207,46 +195,33 @@ import { Product, Category, Testimonial } from '../../core/models/product.model'
       <section class="section-padding bg-white overflow-hidden">
         <div class="container-custom">
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <!-- Images collage -->
             <div class="relative h-96 lg:h-[520px]">
-              <img
-                src="https://images.unsplash.com/photo-1525310072745-f49212b5ac6d?w=500&q=80"
-                alt="Atelier"
-                class="absolute top-0 left-0 w-2/3 h-3/4 object-cover rounded-2xl shadow-xl"
-              />
-              <img
-                src="https://images.unsplash.com/photo-1490750967868-88df5691cc36?w=400&q=80"
-                alt="Fleurs"
-                class="absolute bottom-0 right-0 w-1/2 h-1/2 object-cover rounded-2xl shadow-xl"
-              />
-              <!-- Badge -->
+              <img src="https://images.unsplash.com/photo-1525310072745-f49212b5ac6d?w=500&q=80" alt="Atelier"
+                class="absolute top-0 left-0 w-2/3 h-3/4 object-cover rounded-2xl shadow-xl" />
+              <img src="https://images.unsplash.com/photo-1490750967868-88df5691cc36?w=400&q=80" alt="Fleurs"
+                class="absolute bottom-0 right-0 w-1/2 h-1/2 object-cover rounded-2xl shadow-xl" />
               <div class="absolute top-1/2 right-6 -translate-y-1/2 bg-primary-green text-white rounded-2xl p-5 shadow-xl text-center">
                 <p class="font-heading text-4xl font-bold">12</p>
-                <p class="text-xs text-green-100 font-medium">ans<br>d'expérience</p>
+                <p class="text-xs text-green-100 font-medium" [innerHTML]="'home.about_years' | translate"></p>
               </div>
             </div>
 
-            <!-- Text -->
             <div>
-              <p class="text-rose-accent uppercase tracking-widest text-sm font-semibold mb-4">Notre histoire</p>
-              <h2 class="font-heading text-4xl text-charcoal mb-6">L'amour des fleurs, <em>en héritage</em></h2>
-              <p class="text-gray-500 leading-relaxed mb-5">
-                Ars Botanica est née de la passion de Marie Lecomte pour l'art floral. Après des années à parcourir les marchés aux fleurs d'Europe, elle a ouvert son atelier au cœur de Paris.
-              </p>
-              <p class="text-gray-500 leading-relaxed mb-8">
-                Chaque création est pensée comme une œuvre unique. Nous sélectionnons nos fleurs auprès de producteurs locaux et respectueux de l'environnement, pour vous offrir le meilleur de la nature.
-              </p>
+              <p class="text-rose-accent uppercase tracking-widest text-sm font-semibold mb-4">{{ 'home.about_eyebrow' | translate }}</p>
+              <h2 class="font-heading text-4xl text-charcoal mb-6">{{ 'about.founder_title' | translate }}</h2>
+              <p class="text-gray-500 leading-relaxed mb-5">{{ 'home.about_p1' | translate }}</p>
+              <p class="text-gray-500 leading-relaxed mb-8">{{ 'home.about_p2' | translate }}</p>
               <div class="flex flex-wrap gap-4 mb-10">
                 <div *ngFor="let value of values" class="flex items-center gap-2">
                   <div class="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center">
                     <i [class]="value.icon + ' text-primary-green text-sm'"></i>
                   </div>
-                  <span class="text-sm font-medium text-charcoal">{{ value.label }}</span>
+                  <span class="text-sm font-medium text-charcoal">{{ value.labelKey | translate }}</span>
                 </div>
               </div>
               <a routerLink="/a-propos">
                 <button pButton
-                  label="Découvrir notre univers"
+                  [label]="'home.about_cta' | translate"
                   icon="pi pi-arrow-right" iconPos="right"
                   style="background: #5a8a4a; border: none; border-radius: 2rem; padding: 0.85rem 2rem;">
                 </button>
@@ -260,15 +235,14 @@ import { Product, Category, Testimonial } from '../../core/models/product.model'
       <section class="section-padding bg-cream">
         <div class="container-custom">
           <div class="text-center mb-14">
-            <p class="text-rose-accent uppercase tracking-widest text-sm font-semibold mb-3">Témoignages</p>
-            <h2 class="font-heading text-4xl text-charcoal mb-4">Ils nous font confiance</h2>
-            <p class="text-gray-500 max-w-xl mx-auto">La satisfaction de nos clients est notre plus belle récompense.</p>
+            <p class="text-rose-accent uppercase tracking-widest text-sm font-semibold mb-3">{{ 'home.testimonials_eyebrow' | translate }}</p>
+            <h2 class="font-heading text-4xl text-charcoal mb-4">{{ 'home.testimonials_title' | translate }}</h2>
+            <p class="text-gray-500 max-w-xl mx-auto">{{ 'home.testimonials_desc' | translate }}</p>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div *ngFor="let t of testimonials"
               class="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
-              <!-- Stars -->
               <div class="flex gap-1 mb-4">
                 <i *ngFor="let s of [1,2,3,4,5]"
                   class="pi pi-star-fill text-sm"
@@ -295,22 +269,20 @@ import { Product, Category, Testimonial } from '../../core/models/product.model'
           <div class="absolute bottom-0 right-1/4 w-64 h-64 rounded-full bg-white blur-3xl"></div>
         </div>
         <div class="container-custom text-center relative z-10">
-          <p class="text-green-100 uppercase tracking-widest text-sm font-semibold mb-3">Prêt à commander ?</p>
-          <h2 class="font-heading text-4xl text-white mb-5">Donnez vie à vos projets floraux</h2>
-          <p class="text-green-100 max-w-lg mx-auto mb-10 text-lg">
-            Bouquets, décorations, mariages… Discutons ensemble de vos envies.
-          </p>
+          <p class="text-green-100 uppercase tracking-widest text-sm font-semibold mb-3">{{ 'home.cta_eyebrow' | translate }}</p>
+          <h2 class="font-heading text-4xl text-white mb-5">{{ 'home.cta_title' | translate }}</h2>
+          <p class="text-green-100 max-w-lg mx-auto mb-10 text-lg">{{ 'home.cta_desc' | translate }}</p>
           <div class="flex flex-wrap gap-4 justify-center">
             <a routerLink="/boutique">
               <button pButton
-                label="Voir la boutique"
+                [label]="'home.cta_shop' | translate"
                 icon="pi pi-shopping-bag"
                 style="background: white; color: #5a8a4a; border: none; border-radius: 2rem; padding: 0.85rem 2rem; font-size: 1rem;">
               </button>
             </a>
             <a routerLink="/contact">
               <button pButton
-                label="Nous contacter"
+                [label]="'home.cta_contact' | translate"
                 icon="pi pi-envelope"
                 class="p-button-outlined"
                 style="border-color: white; color: white; border-radius: 2rem; padding: 0.85rem 2rem; font-size: 1rem;">
@@ -329,16 +301,16 @@ export class HomeComponent implements OnInit {
   testimonials: Testimonial[] = [];
 
   stats = [
-    { value: '500+', label: 'Clients satisfaits' },
-    { value: '12', label: 'Ans d\'expérience' },
-    { value: '100%', label: 'Fleurs fraîches' },
+    { value: '500+', labelKey: 'home.stat_clients' },
+    { value: '12', labelKey: 'home.stat_years' },
+    { value: '100%', labelKey: 'home.stat_fresh' },
   ];
 
   values = [
-    { icon: 'pi pi-leaf', label: 'Éco-responsable' },
-    { icon: 'pi pi-heart', label: 'Fait avec amour' },
-    { icon: 'pi pi-verified', label: 'Qualité garantie' },
-    { icon: 'pi pi-truck', label: 'Livraison soignée' },
+    { icon: 'pi pi-leaf', labelKey: 'home.value_eco' },
+    { icon: 'pi pi-heart', labelKey: 'home.value_love' },
+    { icon: 'pi pi-verified', labelKey: 'home.value_quality' },
+    { icon: 'pi pi-truck', labelKey: 'home.value_delivery' },
   ];
 
   carouselOptions = [

@@ -1,0 +1,5 @@
+# Fichiers à ne pas écraser lors de la regénération
+
+# Garder les fichiers custom si tu en crées dans src/app/core/api/
+# Exemple : custom extensions ou providers manuels
+# custom-api.ts

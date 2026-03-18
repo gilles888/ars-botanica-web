@@ -10,8 +10,9 @@ import { GalleriaModule } from 'primeng/galleria';
 import { DividerModule } from 'primeng/divider';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ToastModule } from 'primeng/toast';
+import { SelectButtonModule } from 'primeng/selectbutton';
 import { MessageService, MenuItem } from 'primeng/api';
-import { Product } from '../../core/models/product.model';
+import { Product, ProductVariant, getStartingPrice } from '../../core/models/product.model';
 import { ProductService } from '../../core/services/product.service';
 import { CartService } from '../../core/services/cart.service';
 
@@ -21,7 +22,8 @@ import { CartService } from '../../core/services/cart.service';
   imports: [
     CommonModule, RouterLink, FormsModule,
     ButtonModule, RatingModule, TagModule, BreadcrumbModule,
-    GalleriaModule, DividerModule, InputNumberModule, ToastModule
+    GalleriaModule, DividerModule, InputNumberModule, ToastModule,
+    SelectButtonModule
   ],
   providers: [MessageService],
   template: `
@@ -88,12 +90,27 @@ import { CartService } from '../../core/services/cart.service';
 
             <!-- Price -->
             <div class="flex items-baseline gap-3 mb-6">
-              <span class="text-4xl font-bold text-primary-green">{{ product.price }}€</span>
-              <span *ngIf="product.originalPrice" class="text-xl text-gray-400 line-through">{{ product.originalPrice }}€</span>
-              <span *ngIf="product.originalPrice"
-                class="bg-rose-pastel text-white text-sm rounded-full px-3 py-1">
-                -{{ getDiscount() }}%
-              </span>
+              <span class="text-4xl font-bold text-primary-green">{{ selectedVariant?.price ?? getStartingPrice(product) }}€</span>
+            </div>
+
+            <!-- Size selector -->
+            <div class="mb-6" *ngIf="product.variants && product.variants.length > 0">
+              <p class="text-sm font-medium text-charcoal mb-3">Taille</p>
+              <div class="flex gap-2">
+                <button
+                  *ngFor="let variant of product.variants"
+                  (click)="selectVariant(variant)"
+                  class="px-4 py-2 rounded-full border-2 text-sm font-medium transition-all"
+                  [class.border-primary-green]="selectedVariant?.id === variant.id"
+                  [class.bg-primary-green]="selectedVariant?.id === variant.id"
+                  [class.text-white]="selectedVariant?.id === variant.id"
+                  [class.border-gray-200]="selectedVariant?.id !== variant.id"
+                  [class.text-gray-600]="selectedVariant?.id !== variant.id"
+                  [class.hover:border-primary-green]="selectedVariant?.id !== variant.id"
+                >
+                  {{ sizeLabel(variant.size) }} — {{ variant.price }}€
+                </button>
+              </div>
             </div>
 
             <p-divider></p-divider>
@@ -178,7 +195,7 @@ import { CartService } from '../../core/services/cart.service';
                   {{ rp.name }}
                 </h3>
                 <div class="flex items-center justify-between">
-                  <span class="text-lg font-bold text-primary-green">{{ rp.price }}€</span>
+                  <span class="text-lg font-bold text-primary-green">à partir de {{ getStartingPrice(rp) }}€</span>
                   <p-rating [ngModel]="rp.rating" [readonly]="true" [cancel]="false" [stars]="5"></p-rating>
                 </div>
               </div>
@@ -198,10 +215,13 @@ import { CartService } from '../../core/services/cart.service';
   `
 })
 export class ProductDetailComponent implements OnInit {
+  readonly getStartingPrice = getStartingPrice;
+
   product: Product | undefined;
   relatedProducts: Product[] = [];
   selectedImageIndex = 0;
   quantity = 1;
+  selectedVariant: ProductVariant | null = null;
 
   breadcrumb: MenuItem[] = [];
   breadcrumbHome: MenuItem = { icon: 'pi pi-home', routerLink: '/' };
@@ -220,13 +240,24 @@ export class ProductDetailComponent implements OnInit {
     private cartService: CartService
   ) {}
 
+  sizeLabel(size: string): string {
+    const labels: Record<string, string> = { PETIT: 'Petit', MOYEN: 'Moyen', GRAND: 'Grand' };
+    return labels[size] ?? size;
+  }
+
+  selectVariant(variant: ProductVariant): void {
+    this.selectedVariant = variant;
+  }
+
   addToCart(): void {
     if (!this.product) return;
-    this.cartService.addItem(this.product, this.quantity);
+    const variant = this.selectedVariant ?? this.product.variants?.[0];
+    if (!variant) return;
+    this.cartService.addItem(this.product, variant, this.quantity);
     this.messageService.add({
       severity: 'success',
       summary: 'Ajouté au panier',
-      detail: `${this.quantity}× ${this.product.name}`,
+      detail: `${this.quantity}× ${this.product.name} (${this.sizeLabel(variant.size)})`,
       life: 2500
     });
   }
@@ -241,6 +272,7 @@ export class ProductDetailComponent implements OnInit {
         }
         this.product = product;
         this.quantity = 1;
+        this.selectedVariant = product.variants?.find(v => v.size === 'MOYEN') ?? product.variants?.[0] ?? null;
         this.breadcrumb = [
           { label: 'Boutique', routerLink: '/boutique' },
           { label: product.name }
@@ -250,10 +282,5 @@ export class ProductDetailComponent implements OnInit {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       });
     });
-  }
-
-  getDiscount(): number {
-    if (!this.product?.originalPrice) return 0;
-    return Math.round((1 - this.product.price / this.product.originalPrice) * 100);
   }
 }

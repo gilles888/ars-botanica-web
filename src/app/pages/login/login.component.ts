@@ -6,12 +6,13 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, ButtonModule, InputTextModule, ToastModule],
+  imports: [CommonModule, FormsModule, RouterLink, ButtonModule, InputTextModule, ToastModule, TranslateModule],
   providers: [MessageService],
   template: `
     <p-toast position="bottom-right"></p-toast>
@@ -26,27 +27,27 @@ import { AuthService } from '../../core/services/auth.service';
             </div>
             <span class="font-heading text-2xl font-semibold text-charcoal">Ars <span class="text-primary-green">Botanica</span></span>
           </a>
-          <h1 class="font-heading text-3xl text-charcoal font-bold">Connexion</h1>
-          <p class="text-gray-500 mt-2">Accédez à votre espace personnel</p>
+          <h1 class="font-heading text-3xl text-charcoal font-bold">{{ 'auth.login_title' | translate }}</h1>
+          <p class="text-gray-500 mt-2">{{ 'auth.login_subtitle' | translate }}</p>
         </div>
 
         <!-- Form -->
         <div class="bg-white rounded-2xl shadow-sm p-8">
           <div class="space-y-5">
             <div class="flex flex-col gap-2">
-              <label class="text-sm font-medium text-charcoal">Email</label>
+              <label class="text-sm font-medium text-charcoal">{{ 'auth.email' | translate }}</label>
               <input pInputText type="email" [(ngModel)]="email" placeholder="marie@exemple.fr"
                 class="rounded-xl w-full" (keyup.enter)="submit()" />
             </div>
             <div class="flex flex-col gap-2">
-              <label class="text-sm font-medium text-charcoal">Mot de passe</label>
+              <label class="text-sm font-medium text-charcoal">{{ 'auth.password' | translate }}</label>
               <input pInputText type="password" [(ngModel)]="password" placeholder="••••••••"
                 class="rounded-xl w-full" (keyup.enter)="submit()" />
             </div>
           </div>
 
           <button pButton
-            label="Se connecter"
+            [label]="'auth.login_btn' | translate"
             icon="pi pi-sign-in"
             [loading]="loading"
             (click)="submit()"
@@ -55,8 +56,8 @@ import { AuthService } from '../../core/services/auth.service';
           </button>
 
           <p class="text-center text-sm text-gray-500 mt-5">
-            Pas encore de compte ?
-            <a routerLink="/inscription" class="text-primary-green font-medium hover:underline ml-1">Créer un compte</a>
+            {{ 'auth.no_account' | translate }}
+            <a routerLink="/inscription" class="text-primary-green font-medium hover:underline ml-1">{{ 'auth.create_account' | translate }}</a>
           </p>
         </div>
 
@@ -73,12 +74,17 @@ export class LoginComponent {
     private authService: AuthService,
     private messageService: MessageService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private translate: TranslateService
   ) {}
 
   submit() {
     if (!this.email || !this.password) {
-      this.messageService.add({ severity: 'warn', summary: 'Champs requis', detail: 'Veuillez remplir tous les champs.' });
+      this.messageService.add({
+        severity: 'warn',
+        summary: this.translate.instant('auth.toast_required'),
+        detail: this.translate.instant('auth.toast_fill_all')
+      });
       return;
     }
     this.loading = true;
@@ -89,7 +95,11 @@ export class LoginComponent {
       },
       error: () => {
         this.loading = false;
-        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Email ou mot de passe incorrect.' });
+        this.messageService.add({
+          severity: 'error',
+          summary: this.translate.instant('auth.toast_error'),
+          detail: this.translate.instant('auth.toast_login_error')
+        });
       }
     });
   }

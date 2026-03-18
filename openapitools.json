@@ -1,0 +1,27 @@
+{
+  "$schema": "node_modules/@openapitools/openapi-generator-cli/config.schema.json",
+  "spaces": 2,
+  "generator-cli": {
+    "version": "7.6.0",
+    "generators": {
+      "bloom-studio": {
+        "generatorName": "typescript-angular",
+        "inputSpec": "http://localhost:8081/v3/api-docs",
+        "output": "./src/app/core/api/generated",
+        "additionalProperties": {
+          "fileNaming": "kebab-case",
+          "withInterfaces": true,
+          "supportsES6": true,
+          "withSeparateModelsAndApi": true,
+          "modelPackage": "model",
+          "apiPackage": "api",
+          "enumPropertyNaming": "UPPERCASE",
+          "stringEnums": true,
+          "useSingleRequestParameter": false,
+          "npmName": "bloom-studio-api",
+          "npmVersion": "1.0.0"
+        }
+      }
+    }
+  }
+}

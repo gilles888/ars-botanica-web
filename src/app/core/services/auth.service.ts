@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { map, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { AuthUser } from '../models/auth-user.model';
-import { environment } from '../../../environments/environment';
+import { AuthentificationService, AuthResponse } from '@core/api/generated';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -12,16 +12,18 @@ export class AuthService {
 
   currentUser$ = new BehaviorSubject<AuthUser | null>(this.loadUser());
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(private authApiService: AuthentificationService, private router: Router) {}
 
   login(email: string, password: string): Observable<AuthUser> {
-    return this.http.post<AuthUser>(`${environment.apiUrl}/auth/login`, { email, password }).pipe(
+    return this.authApiService.login({ email, password }).pipe(
+      map(response => this.mapToAuthUser(response)),
       tap(user => this.storeUser(user))
     );
   }
 
   register(firstName: string, lastName: string, email: string, password: string): Observable<AuthUser> {
-    return this.http.post<AuthUser>(`${environment.apiUrl}/auth/register`, { firstName, lastName, email, password }).pipe(
+    return this.authApiService.register({ firstName, lastName, email, password }).pipe(
+      map(response => this.mapToAuthUser(response)),
       tap(user => this.storeUser(user))
     );
   }
@@ -37,8 +39,23 @@ export class AuthService {
     return !!this.getToken();
   }
 
+  isAdmin(): boolean {
+    return this.currentUser$.value?.role === 'ADMIN';
+  }
+
   getToken(): string | null {
     return localStorage.getItem(this.TOKEN_KEY);
+  }
+
+  private mapToAuthUser(response: AuthResponse): AuthUser {
+    return {
+      userId: response.userId ?? 0,
+      email: response.email ?? '',
+      firstName: response.firstName ?? '',
+      lastName: response.lastName ?? '',
+      role: response.role ?? '',
+      accessToken: response.accessToken ?? '',
+    };
   }
 
   private storeUser(user: AuthUser): void {

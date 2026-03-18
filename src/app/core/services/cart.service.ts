@@ -1,7 +1,7 @@
 import { Injectable, computed, signal } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { CartItem } from '../models/cart-item.model';
-import { Product } from '../models/product.model';
+import { Product, ProductVariant } from '../models/product.model';
 
 const STORAGE_KEY = 'bloom_cart';
 
@@ -19,40 +19,48 @@ export class CartService {
   );
 
   readonly cartTotal = computed(() =>
-    this._itemsSignal().reduce((sum, item) => sum + item.product.price * item.quantity, 0)
+    this._itemsSignal().reduce((sum, item) => sum + (item.variant?.price ?? 0) * item.quantity, 0)
   );
 
   readonly cartItems = this._itemsSignal.asReadonly();
 
-  addItem(product: Product, quantity = 1): void {
+  addItem(product: Product, variant: ProductVariant, quantity = 1): void {
     const current = this._items.value;
-    const existing = current.find(i => i.product.id === product.id);
+    const existing = current.find(
+      i => i.product.id === product.id && i.variant.id === variant.id
+    );
 
     let updated: CartItem[];
     if (existing) {
       updated = current.map(i =>
-        i.product.id === product.id
+        i.product.id === product.id && i.variant.id === variant.id
           ? { ...i, quantity: i.quantity + quantity }
           : i
       );
     } else {
-      updated = [...current, { product, quantity }];
+      updated = [...current, { product, variant, quantity }];
     }
     this.setState(updated);
   }
 
-  removeItem(productId: number): void {
-    this.setState(this._items.value.filter(i => i.product.id !== productId));
+  removeItem(productId: number, variantId: number): void {
+    this.setState(
+      this._items.value.filter(
+        i => !(i.product.id === productId && i.variant.id === variantId)
+      )
+    );
   }
 
-  updateQuantity(productId: number, quantity: number): void {
+  updateQuantity(productId: number, variantId: number, quantity: number): void {
     if (quantity <= 0) {
-      this.removeItem(productId);
+      this.removeItem(productId, variantId);
       return;
     }
     this.setState(
       this._items.value.map(i =>
-        i.product.id === productId ? { ...i, quantity } : i
+        i.product.id === productId && i.variant.id === variantId
+          ? { ...i, quantity }
+          : i
       )
     );
   }
@@ -88,7 +96,8 @@ export class CartService {
   private loadFromStorage(): CartItem[] {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : [];
+      const items: CartItem[] = raw ? JSON.parse(raw) : [];
+      return items.filter(i => i?.product && i?.variant?.price != null);
     } catch {
       return [];
     }
