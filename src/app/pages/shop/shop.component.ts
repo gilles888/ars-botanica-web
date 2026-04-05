@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -359,7 +359,8 @@ export class ShopComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private cartService: CartService,
     private messageService: MessageService,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -367,11 +368,11 @@ export class ShopComponent implements OnInit, OnDestroy {
     this.currentLang = this.translate.currentLang || 'fr';
     this.buildSortOptions();
     this.updateBreadcrumb();
-    this.langSub.add(this.translate.onLangChange.subscribe(() => {
-      // Mise à jour de la langue lors d'un changement
-      this.currentLang = this.translate.currentLang || 'fr';
+    this.langSub.add(this.translate.onLangChange.subscribe((event) => {
+      this.currentLang = event.lang;
       this.buildSortOptions();
       this.updateBreadcrumb();
+      this.cdr.detectChanges();
     }));
 
     this.loadProducts();
