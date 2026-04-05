@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -14,6 +14,8 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { ToastModule } from 'primeng/toast';
 import { TagModule } from 'primeng/tag';
 import { DividerModule } from 'primeng/divider';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { TooltipModule } from 'primeng/tooltip';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { AuthService } from '../../core/services/auth.service';
 import { Product, getStartingPrice } from '../../core/models/product.model';
@@ -43,7 +45,7 @@ interface ProductForm {
     CommonModule, FormsModule, RouterLink,
     ButtonModule, TableModule, DialogModule, ConfirmDialogModule,
     InputTextModule, InputTextareaModule, DropdownModule, CheckboxModule,
-    ToastModule, TagModule, DividerModule
+    ToastModule, TagModule, DividerModule, ProgressSpinnerModule, TooltipModule
   ],
   providers: [MessageService, ConfirmationService],
   template: `
@@ -320,13 +322,97 @@ interface ProductForm {
           </p-dropdown>
         </div>
 
-        <!-- Images -->
-        <div class="flex flex-col gap-2">
-          <label class="text-sm font-medium text-charcoal">Images (URLs séparées par des virgules)</label>
-          <input pInputText [(ngModel)]="form.imagesRaw"
-            placeholder="https://example.com/img1.jpg, https://example.com/img2.jpg"
-            class="rounded-xl w-full" />
+        <!-- ── Section Images ──────────────────────────────────── -->
+        <div class="flex flex-col gap-3">
+          <label class="text-sm font-medium text-charcoal">Images</label>
+
+          <!-- Miniatures de la liste courante -->
+          <div *ngIf="imagesList.length > 0"
+            class="flex flex-wrap gap-3 p-3 bg-gray-50 rounded-xl border border-gray-200">
+            <div *ngFor="let imgUrl of imagesList; let i = index"
+              class="relative group w-20 h-20 flex-shrink-0">
+              <img [src]="imgUrl" [alt]="'Image ' + (i + 1)"
+                class="w-20 h-20 rounded-lg object-cover border border-gray-200"
+                (error)="onImageError($event)" />
+              <!-- Bouton suppression affiché au survol -->
+              <button
+                type="button"
+                (click)="removeImage(i)"
+                pTooltip="Supprimer cette image"
+                class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-red-500 text-white
+                       flex items-center justify-center opacity-0 group-hover:opacity-100
+                       transition-opacity shadow-md hover:bg-red-600 focus:outline-none"
+                style="font-size: 10px; line-height: 1; cursor: pointer;">
+                <i class="pi pi-times" style="font-size: 10px;"></i>
+              </button>
+              <!-- Badge numéro d'ordre -->
+              <span *ngIf="imagesList.length > 1"
+                class="absolute bottom-1 left-1 bg-black bg-opacity-50 text-white
+                       rounded text-xs px-1 leading-tight">
+                {{ i + 1 }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Message si aucune image -->
+          <div *ngIf="imagesList.length === 0"
+            class="flex items-center gap-2 p-3 bg-gray-50 rounded-xl border border-dashed border-gray-300 text-gray-400 text-sm">
+            <i class="pi pi-image"></i>
+            <span>Aucune image — uploadez un fichier ou collez une URL ci-dessous</span>
+          </div>
+
+          <!-- Option A : upload de fichier -->
+          <div class="flex items-center gap-3">
+            <!-- Input file caché, déclenché par le bouton -->
+            <input
+              #fileInput
+              type="file"
+              accept="image/*"
+              class="hidden"
+              (change)="onFileSelected($event)" />
+
+            <button pButton
+              type="button"
+              icon="pi pi-upload"
+              label="Choisir une image"
+              class="p-button-outlined p-button-sm"
+              style="border-color: #5a8a4a; color: #5a8a4a; border-radius: 2rem;"
+              [disabled]="uploadingImage"
+              (click)="fileInput.click()">
+            </button>
+
+            <!-- Spinner pendant l'upload -->
+            <div *ngIf="uploadingImage" class="flex items-center gap-2 text-sm text-gray-500">
+              <p-progressSpinner
+                strokeWidth="4"
+                styleClass="w-5 h-5"
+                animationDuration=".8s">
+              </p-progressSpinner>
+              <span>Upload en cours...</span>
+            </div>
+          </div>
+
+          <!-- Option B : saisie d'URL manuelle -->
+          <div class="flex gap-2">
+            <input pInputText
+              [(ngModel)]="urlInputValue"
+              placeholder="https://example.com/image.jpg"
+              class="rounded-xl flex-1"
+              (keydown.enter)="addUrlFromInput()" />
+            <button pButton
+              type="button"
+              icon="pi pi-plus"
+              label="Ajouter"
+              class="p-button-outlined p-button-sm"
+              style="border-color: #5a8a4a; color: #5a8a4a; border-radius: 2rem; white-space: nowrap;"
+              (click)="addUrlFromInput()">
+            </button>
+          </div>
+          <p class="text-xs text-gray-400 -mt-1">
+            Vous pouvez aussi coller plusieurs URLs séparées par des virgules, puis cliquer "Ajouter".
+          </p>
         </div>
+        <!-- ── Fin section Images ─────────────────────────────── -->
 
         <!-- Tags -->
         <div class="flex flex-col gap-2">
@@ -385,6 +471,15 @@ export class AdminComponent implements OnInit {
   editMode = false;
   adminName = '';
 
+  /** Liste des URLs d'images en cours d'édition */
+  imagesList: string[] = [];
+
+  /** Valeur du champ de saisie manuelle d'URL */
+  urlInputValue = '';
+
+  /** Indicateur d'upload en cours */
+  uploadingImage = false;
+
   form: ProductForm = this.emptyForm();
 
   categories = [
@@ -426,11 +521,15 @@ export class AdminComponent implements OnInit {
   openAdd() {
     this.editMode = false;
     this.form = this.emptyForm();
+    this.imagesList = [];
+    this.urlInputValue = '';
     this.dialogVisible = true;
   }
 
   openEdit(product: Product) {
     this.editMode = true;
+    this.imagesList = [...(product.images || [])];
+    this.urlInputValue = '';
     this.form = {
       id: product.id,
       name: product.name,
@@ -459,6 +558,89 @@ export class AdminComponent implements OnInit {
       .replace(/\s+/g, '-');
   }
 
+  /**
+   * Déclenché quand l'utilisateur sélectionne un fichier via l'input caché.
+   * Envoie le fichier en multipart/form-data vers POST /api/products/upload-image
+   * et ajoute l'URL retournée à imagesList.
+   */
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) { return; }
+
+    const file = input.files[0];
+
+    // Réinitialise la valeur de l'input pour permettre de re-sélectionner le même fichier
+    input.value = '';
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    this.uploadingImage = true;
+
+    this.http.post<{ url: string }>(`${environment.apiUrl}/products/upload-image`, formData).subscribe({
+      next: (response) => {
+        this.uploadingImage = false;
+        if (response?.url) {
+          this.imagesList = [...this.imagesList, response.url];
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Image uploadée',
+            detail: 'L\'image a été ajoutée avec succès.'
+          });
+        } else {
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Réponse inattendue',
+            detail: 'L\'upload a réussi mais aucune URL n\'a été retournée.'
+          });
+        }
+      },
+      error: () => {
+        this.uploadingImage = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erreur d\'upload',
+          detail: 'Impossible d\'uploader l\'image. Vérifiez le format et réessayez.'
+        });
+      }
+    });
+  }
+
+  /**
+   * Ajoute une ou plusieurs URLs saisies manuellement dans le champ texte.
+   * Supporte plusieurs URLs séparées par des virgules.
+   */
+  addUrlFromInput() {
+    const urls = this.urlInputValue
+      .split(',')
+      .map(u => u.trim())
+      .filter(u => u.length > 0);
+
+    if (urls.length === 0) { return; }
+
+    // Filtre les doublons
+    const nouvelles = urls.filter(u => !this.imagesList.includes(u));
+    if (nouvelles.length > 0) {
+      this.imagesList = [...this.imagesList, ...nouvelles];
+    }
+    this.urlInputValue = '';
+  }
+
+  /**
+   * Supprime une image de la liste par son index.
+   */
+  removeImage(index: number) {
+    this.imagesList = this.imagesList.filter((_, i) => i !== index);
+  }
+
+  /**
+   * Gère les erreurs de chargement des miniatures (image introuvable).
+   */
+  onImageError(event: Event) {
+    const img = event.target as HTMLImageElement;
+    img.style.display = 'none';
+  }
+
   saveProduct() {
     if (!this.form.name || !this.form.slug || !this.form.price || !this.form.category || !this.form.shortDescription) {
       this.messageService.add({ severity: 'warn', summary: 'Champs requis', detail: 'Veuillez remplir tous les champs obligatoires.' });
@@ -473,7 +655,8 @@ export class AdminComponent implements OnInit {
       price: this.form.price,
       originalPrice: this.form.originalPrice || null,
       category: this.form.category,
-      images: this.form.imagesRaw.split(',').map(s => s.trim()).filter(Boolean),
+      // Utilise imagesList (gérée en temps réel) comme source de vérité
+      images: this.imagesList,
       tags: this.form.tagsRaw.split(',').map(s => s.trim()).filter(Boolean),
       inStock: this.form.inStock,
       isNew: this.form.isNew,
