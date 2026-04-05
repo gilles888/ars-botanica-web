@@ -11,6 +11,7 @@ import { ToastModule } from 'primeng/toast';
 import { TagModule } from 'primeng/tag';
 import { DividerModule } from 'primeng/divider';
 import { TooltipModule } from 'primeng/tooltip';
+import { InputTextareaModule } from 'primeng/inputtextarea';
 import { MessageService } from 'primeng/api';
 import { AuthService } from '../../../core/services/auth.service';
 import { environment } from '../../../../environments/environment';
@@ -39,6 +40,9 @@ interface Order {
   shippingCost: number;
   total: number;
   createdAt: string;
+  trackingNumber?: string;
+  carrier?: string;
+  fulfillmentNote?: string;
 }
 
 @Component({
@@ -47,7 +51,7 @@ interface Order {
   imports: [
     CommonModule, FormsModule, RouterLink,
     ButtonModule, TableModule, DialogModule, DropdownModule,
-    ToastModule, TagModule, DividerModule, TooltipModule
+    ToastModule, TagModule, DividerModule, TooltipModule, InputTextareaModule
   ],
   providers: [MessageService],
   template: `
@@ -299,6 +303,15 @@ interface Order {
               {{ selectedOrder.deliveryNotes }}
             </p>
           </div>
+          <!-- Infos d'expédition / retrait renseignées lors du fulfillment -->
+          <div *ngIf="selectedOrder?.trackingNumber || selectedOrder?.carrier || selectedOrder?.fulfillmentNote"
+            class="col-span-2">
+            <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Expédition / Retrait</p>
+            <p *ngIf="selectedOrder?.carrier || selectedOrder?.trackingNumber" class="font-medium text-charcoal">
+              {{ selectedOrder?.carrier }} <span *ngIf="selectedOrder?.trackingNumber">— Suivi : {{ selectedOrder?.trackingNumber }}</span>
+            </p>
+            <p *ngIf="selectedOrder?.fulfillmentNote" class="text-sm text-gray-500 mt-0.5 whitespace-pre-line">{{ selectedOrder?.fulfillmentNote }}</p>
+          </div>
         </div>
 
         <p-divider></p-divider>
@@ -345,6 +358,73 @@ interface Order {
         </div>
       </div>
     </p-dialog>
+
+    <!-- ── Dialog Fulfillment ─────────────────────────────── -->
+    <p-dialog
+      [(visible)]="fulfillmentVisible"
+      [header]="fulfillmentPendingStatus === 'CONFIRMED' ? 'Confirmer la commande' : 'Marquer comme expédiée'"
+      [modal]="true"
+      [style]="{ width: '500px' }"
+      [draggable]="false"
+      [closable]="false"
+    >
+      <div *ngIf="fulfillmentOrder" class="space-y-4 py-2">
+
+        <div class="bg-blue-50 rounded-xl p-4 flex items-start gap-3">
+          <i class="pi pi-info-circle text-blue-500 mt-0.5 flex-shrink-0"></i>
+          <div>
+            <p class="text-sm font-medium text-charcoal">Commande {{ fulfillmentOrder.orderNumber }}</p>
+            <p class="text-xs text-gray-500 mt-0.5">{{ fulfillmentOrder.userEmail }} — {{ fulfillmentOrder.deliveryMethod === 'pickup' ? 'Retrait en magasin' : 'Livraison à domicile' }}</p>
+          </div>
+        </div>
+
+        <!-- Champs expédition (surtout utiles pour SHIPPED) -->
+        <div *ngIf="fulfillmentPendingStatus === 'SHIPPED'" class="grid grid-cols-2 gap-3">
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-charcoal">Transporteur</label>
+            <input pInputText [(ngModel)]="fulfillment.carrier"
+              placeholder="ex: bpost, DHL, Colissimo"
+              class="rounded-xl w-full text-sm" />
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-charcoal">Numéro de suivi</label>
+            <input pInputText [(ngModel)]="fulfillment.trackingNumber"
+              placeholder="ex: 123456789BE"
+              class="rounded-xl w-full text-sm" />
+          </div>
+        </div>
+
+        <!-- Note (disponible pour CONFIRMED et SHIPPED) -->
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-charcoal">
+            {{ fulfillmentPendingStatus === 'CONFIRMED' ? 'Instructions de retrait / informations de livraison' : 'Note pour le client' }}
+          </label>
+          <textarea pInputTextarea
+            [(ngModel)]="fulfillment.fulfillmentNote"
+            [placeholder]="fulfillmentPendingStatus === 'CONFIRMED'
+              ? 'Ex : Votre commande est prête, venez la retirer du lundi au samedi de 9h à 18h...'
+              : 'Ex : Votre colis a été remis à bpost ce jour...'"
+            rows="4"
+            class="rounded-xl w-full text-sm">
+          </textarea>
+        </div>
+
+        <p class="text-xs text-gray-400">Ces informations seront visibles par le client dans son historique de commandes.</p>
+      </div>
+
+      <ng-template pTemplate="footer">
+        <button pButton label="Annuler" icon="pi pi-times"
+          class="p-button-text" style="color: #5a8a4a;"
+          (click)="cancelFulfillment()">
+        </button>
+        <button pButton
+          [label]="fulfillmentPendingStatus === 'CONFIRMED' ? 'Confirmer la commande' : 'Valider expédition'"
+          [icon]="fulfillmentPendingStatus === 'CONFIRMED' ? 'pi pi-check' : 'pi pi-send'"
+          (click)="confirmFulfillment()"
+          style="background: #5a8a4a; border: none; border-radius: 2rem;">
+        </button>
+      </ng-template>
+    </p-dialog>
   `,
   styles: [`
     :host ::ng-deep .status-dropdown .p-dropdown {
@@ -365,6 +445,12 @@ export class SalesComponent implements OnInit {
   detailVisible = false;
   selectedOrder: Order | null = null;
   adminName = '';
+
+  /* ── Fulfillment dialog ─── */
+  fulfillmentVisible = false;
+  fulfillmentOrder: Order | null = null;
+  fulfillmentPendingStatus = '';
+  fulfillment = { trackingNumber: '', carrier: '', fulfillmentNote: '' };
 
   statusFilters = [
     { label: 'Toutes', value: 'ALL', activeClass: 'border-charcoal bg-charcoal text-white' },
@@ -455,6 +541,15 @@ export class SalesComponent implements OnInit {
   }
 
   updateStatus(order: Order, newStatus: string) {
+    // Pour CONFIRMED et SHIPPED, on ouvre le dialog de fulfillment avant de valider
+    if (newStatus === 'CONFIRMED' || newStatus === 'SHIPPED') {
+      this.fulfillmentOrder = order;
+      this.fulfillmentPendingStatus = newStatus;
+      this.fulfillment = { trackingNumber: '', carrier: '', fulfillmentNote: '' };
+      this.fulfillmentVisible = true;
+      return;
+    }
+    // Pour les autres statuts, mise à jour directe via l'API
     const params = new HttpParams().set('status', newStatus);
     this.http.patch<Order>(`${environment.apiUrl}/orders/${order.id}/status`, null, { params }).subscribe({
       next: (updated) => {
@@ -469,6 +564,55 @@ export class SalesComponent implements OnInit {
         this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Impossible de mettre à jour le statut.' });
       }
     });
+  }
+
+  // Valide le fulfillment et envoie les données à l'API
+  confirmFulfillment() {
+    if (!this.fulfillmentOrder) return;
+    const order = this.fulfillmentOrder;
+    const body = {
+      status: this.fulfillmentPendingStatus,
+      trackingNumber: this.fulfillment.trackingNumber || null,
+      carrier: this.fulfillment.carrier || null,
+      fulfillmentNote: this.fulfillment.fulfillmentNote || null
+    };
+    this.http.patch<Order>(`${environment.apiUrl}/orders/${order.id}/fulfillment`, body).subscribe({
+      next: (updated) => {
+        // Mise à jour locale de la commande avec les données retournées
+        order.status = updated.status;
+        order.trackingNumber = updated.trackingNumber;
+        order.carrier = updated.carrier;
+        order.fulfillmentNote = updated.fulfillmentNote;
+        this.fulfillmentVisible = false;
+        this.fulfillmentOrder = null;
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Commande mise à jour',
+          detail: `${order.orderNumber} → ${this.getStatusLabel(updated.status)}`
+        });
+      },
+      error: () => {
+        // Le dropdown reviendra au statut courant lors de la fermeture
+        this.fulfillmentVisible = false;
+        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: 'Impossible de mettre à jour la commande.' });
+      }
+    });
+  }
+
+  // Annule le dialog de fulfillment et rétablit l'ancien statut dans le dropdown
+  cancelFulfillment() {
+    if (this.fulfillmentOrder) {
+      // Forcer Angular à détecter le changement en réassignant le statut courant
+      const currentStatus = this.fulfillmentOrder.status;
+      this.fulfillmentOrder.status = '';
+      setTimeout(() => {
+        if (this.fulfillmentOrder) {
+          this.fulfillmentOrder.status = currentStatus;
+        }
+      }, 0);
+    }
+    this.fulfillmentVisible = false;
+    this.fulfillmentOrder = null;
   }
 
   openDetail(order: Order) {
