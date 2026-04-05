@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -247,7 +247,8 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     private messageService: MessageService,
     private cartService: CartService,
     private translate: TranslateService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
   ) {}
 
   sizeLabel(size: string): string {
@@ -280,8 +281,9 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     // Initialisation de la langue courante et souscription aux changements
     this.currentLang = this.translate.currentLang || 'fr';
     this.langSub.add(this.translate.onLangChange.subscribe((event) => {
-      this.currentLang = event.lang;
-      this.cdr.detectChanges();
+      this.ngZone.run(() => {
+        this.currentLang = event.lang;
+      });
     }));
 
     this.route.params.subscribe(params => {

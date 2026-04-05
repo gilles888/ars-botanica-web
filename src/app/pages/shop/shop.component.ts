@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -360,7 +360,8 @@ export class ShopComponent implements OnInit, OnDestroy {
     private cartService: CartService,
     private messageService: MessageService,
     private translate: TranslateService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
   ) {}
 
   ngOnInit() {
@@ -369,10 +370,11 @@ export class ShopComponent implements OnInit, OnDestroy {
     this.buildSortOptions();
     this.updateBreadcrumb();
     this.langSub.add(this.translate.onLangChange.subscribe((event) => {
-      this.currentLang = event.lang;
-      this.buildSortOptions();
-      this.updateBreadcrumb();
-      this.cdr.detectChanges();
+      this.ngZone.run(() => {
+        this.currentLang = event.lang;
+        this.buildSortOptions();
+        this.updateBreadcrumb();
+      });
     }));
 
     this.loadProducts();
