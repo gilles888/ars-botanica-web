@@ -652,18 +652,14 @@ export class AdminComponent implements OnInit {
       slug: this.form.slug,
       shortDescription: this.form.shortDescription,
       description: this.form.description,
-      price: this.form.price,
-      originalPrice: this.form.originalPrice || null,
       category: this.form.category,
-      // Utilise imagesList (gérée en temps réel) comme source de vérité
       images: this.imagesList,
       tags: this.form.tagsRaw.split(',').map(s => s.trim()).filter(Boolean),
       inStock: this.form.inStock,
       isNew: this.form.isNew,
       isFeatured: this.form.isFeatured,
       isSeasonal: this.form.isSeasonal,
-      rating: 0,
-      reviewCount: 0,
+      variants: [{ size: 'MOYEN', price: this.form.price }],
     };
 
     const req = this.editMode
