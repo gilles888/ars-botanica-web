@@ -24,7 +24,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes, withViewTransitions()),
     provideAnimations(),
     provideHttpClient(withInterceptors([authInterceptor])),
-    provideTranslateService({ defaultLanguage: 'fr' }),
+    provideTranslateService({ fallbackLang: 'fr' }),
     ...provideTranslateHttpLoader({ prefix: '/assets/i18n/', suffix: '.json' }),
 
     // ── OpenAPI generated client ─────────────────────────────────────

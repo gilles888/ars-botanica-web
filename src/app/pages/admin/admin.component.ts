@@ -142,7 +142,14 @@ interface ProductForm {
         <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
           <div class="p-6 border-b border-gray-100 flex items-center justify-between">
             <h2 class="font-heading text-xl text-charcoal font-semibold">Catalogue produits</h2>
-            <span class="text-sm text-gray-400">{{ products.length }} produit(s)</span>
+            <div class="flex items-center gap-4">
+              <span class="text-sm text-gray-400">{{ products.length }} produit(s)</span>
+              <button pButton label="Ajouter un produit" icon="pi pi-plus"
+                (click)="openAdd()"
+                class="p-button-sm"
+                style="background: #5a8a4a; border: none; border-radius: 2rem; font-weight: 600;">
+              </button>
+            </div>
           </div>
 
           <p-table
