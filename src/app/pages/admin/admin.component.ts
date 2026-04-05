@@ -27,8 +27,12 @@ interface ProductForm {
   slug: string;
   shortDescription: string;
   description: string;
-  price: number | null;
-  originalPrice: number | null;
+  /** Prix de la variante PETIT (optionnel) */
+  prixPetit: number | null;
+  /** Prix de la variante MOYEN (optionnel) */
+  prixMoyen: number | null;
+  /** Prix de la variante GRAND (optionnel) */
+  prixGrand: number | null;
   category: string;
   imagesRaw: string;
   tagsRaw: string;
@@ -295,17 +299,22 @@ interface ProductForm {
             placeholder="Description détaillée du produit..." class="rounded-xl w-full"></textarea>
         </div>
 
-        <!-- Prix -->
-        <div class="grid grid-cols-2 gap-4">
-          <div class="flex flex-col gap-2">
-            <label class="text-sm font-medium text-charcoal">Prix (€) *</label>
-            <input pInputText type="number" [(ngModel)]="form.price"
-              placeholder="59.90" class="rounded-xl w-full" />
-          </div>
-          <div class="flex flex-col gap-2">
-            <label class="text-sm font-medium text-charcoal">Prix barré (€)</label>
-            <input pInputText type="number" [(ngModel)]="form.originalPrice"
-              placeholder="79.90" class="rounded-xl w-full" />
+        <!-- Variantes de prix -->
+        <div class="flex flex-col gap-2">
+          <label class="text-sm font-medium text-charcoal">Prix par taille <span class="text-red-500">*</span> <span class="text-xs text-gray-400">(au moins une taille)</span></label>
+          <div class="grid grid-cols-3 gap-3">
+            <div class="flex flex-col gap-1">
+              <label class="text-xs text-gray-500">🌿 Petit</label>
+              <input pInputText type="number" [(ngModel)]="form.prixPetit" placeholder="ex: 25.00" class="rounded-xl w-full" min="0" step="0.01" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs text-gray-500">🌺 Moyen</label>
+              <input pInputText type="number" [(ngModel)]="form.prixMoyen" placeholder="ex: 45.00" class="rounded-xl w-full" min="0" step="0.01" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs text-gray-500">💐 Grand</label>
+              <input pInputText type="number" [(ngModel)]="form.prixGrand" placeholder="ex: 75.00" class="rounded-xl w-full" min="0" step="0.01" />
+            </div>
           </div>
         </div>
 
@@ -536,8 +545,10 @@ export class AdminComponent implements OnInit {
       slug: product.slug,
       shortDescription: product.shortDescription,
       description: product.description,
-      price: getStartingPrice(product),
-      originalPrice: null,
+      // Peuplement des variantes depuis le tableau product.variants
+      prixPetit: product.variants?.find(v => v.size === 'PETIT')?.price ?? null,
+      prixMoyen: product.variants?.find(v => v.size === 'MOYEN')?.price ?? null,
+      prixGrand: product.variants?.find(v => v.size === 'GRAND')?.price ?? null,
       category: product.category,
       imagesRaw: (product.images || []).join(', '),
       tagsRaw: (product.tags || []).join(', '),
@@ -642,11 +653,25 @@ export class AdminComponent implements OnInit {
   }
 
   saveProduct() {
-    if (!this.form.name || !this.form.slug || !this.form.price || !this.form.category || !this.form.shortDescription) {
-      this.messageService.add({ severity: 'warn', summary: 'Champs requis', detail: 'Veuillez remplir tous les champs obligatoires.' });
+    // Validation : au moins une variante de prix doit être renseignée
+    const hasVariant = (this.form.prixPetit ?? 0) > 0 || (this.form.prixMoyen ?? 0) > 0 || (this.form.prixGrand ?? 0) > 0;
+    if (!this.form.name || !this.form.slug || !hasVariant || !this.form.category || !this.form.shortDescription) {
+      if (!hasVariant) {
+        this.messageService.add({ severity: 'warn', summary: 'Prix requis', detail: 'Au moins une variante de prix est requise.' });
+      } else {
+        this.messageService.add({ severity: 'warn', summary: 'Champs requis', detail: 'Veuillez remplir tous les champs obligatoires.' });
+      }
       return;
     }
     this.saving = true;
+
+    // Construction du tableau variants avec uniquement les tailles ayant un prix valide
+    const variants = [
+      { size: 'PETIT', price: this.form.prixPetit },
+      { size: 'MOYEN', price: this.form.prixMoyen },
+      { size: 'GRAND', price: this.form.prixGrand },
+    ].filter(v => v.price !== null && v.price > 0);
+
     const payload = {
       name: this.form.name,
       slug: this.form.slug,
@@ -659,7 +684,7 @@ export class AdminComponent implements OnInit {
       isNew: this.form.isNew,
       isFeatured: this.form.isFeatured,
       isSeasonal: this.form.isSeasonal,
-      variants: [{ size: 'MOYEN', price: this.form.price }],
+      variants,
     };
 
     const req = this.editMode
@@ -709,7 +734,9 @@ export class AdminComponent implements OnInit {
   private emptyForm(): ProductForm {
     return {
       name: '', slug: '', shortDescription: '', description: '',
-      price: null, originalPrice: null, category: '',
+      // Initialisation des 3 variantes de prix à null
+      prixPetit: null, prixMoyen: null, prixGrand: null,
+      category: '',
       imagesRaw: '', tagsRaw: '',
       inStock: true, isNew: false, isFeatured: false, isSeasonal: false
     };
