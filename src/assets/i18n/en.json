@@ -102,7 +102,9 @@
     "no_results_title": "No creations found",
     "no_results_desc": "Try adjusting your filters.",
     "reset": "Reset",
-    "added_to_cart": "Added to cart"
+    "added_to_cart": "Added to cart",
+    "choose_size": "Choose size",
+    "add_to_cart_confirm": "Add to cart"
   },
   "about": {
     "eyebrow": "Our story",

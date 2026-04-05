@@ -24,6 +24,13 @@ export interface Product {
   inStock: boolean;
   occasion?: string[];
   colors?: string[];
+  // Champs multilingues optionnels (EN / NL)
+  nameEn?: string;
+  nameNl?: string;
+  shortDescriptionEn?: string;
+  shortDescriptionNl?: string;
+  descriptionEn?: string;
+  descriptionNl?: string;
 }
 
 export type ProductCategory =
@@ -62,4 +69,20 @@ export function getStartingPrice(product: Product): number {
 
 export function getVariantPrice(product: Product, size: ProductSize): number {
   return product.variants?.find(v => v.size === size)?.price ?? 0;
+}
+
+/**
+ * Retourne la valeur localisée d'un champ texte du produit.
+ * Si la traduction pour la langue demandée est absente, retourne la valeur FR par défaut.
+ */
+export function localizedField(product: Product, field: 'name' | 'shortDescription' | 'description', lang: string): string {
+  if (lang === 'en') {
+    const key = (field + 'En') as keyof Product;
+    return (product[key] as string) || (product[field] as string);
+  }
+  if (lang === 'nl') {
+    const key = (field + 'Nl') as keyof Product;
+    return (product[key] as string) || (product[field] as string);
+  }
+  return (product[field] as string) || '';
 }

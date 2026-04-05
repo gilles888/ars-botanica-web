@@ -19,7 +19,7 @@ import { DialogModule } from 'primeng/dialog';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subscription, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { Product, ProductVariant, getStartingPrice } from '../../core/models/product.model';
+import { Product, ProductVariant, getStartingPrice, localizedField } from '../../core/models/product.model';
 import { ProductService } from '../../core/services/product.service';
 import { CartService } from '../../core/services/cart.service';
 import { MenuItem, MessageService } from 'primeng/api';
@@ -192,7 +192,7 @@ import { PaginatorState } from 'primeng/paginator';
                 class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 group cursor-pointer"
                 [routerLink]="['/boutique', product.slug]">
                 <div class="relative overflow-hidden aspect-[4/3]">
-                  <img [src]="product.images[0]" [alt]="product.name"
+                  <img [src]="product.images[0]" [alt]="localizedField(product, 'name', currentLang)"
                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   <div class="absolute top-3 left-3 flex gap-2">
                     <span *ngIf="product.isNew"
@@ -210,9 +210,9 @@ import { PaginatorState } from 'primeng/paginator';
                 <div class="p-5">
                   <p class="text-xs text-gray-400 uppercase tracking-wider mb-1 capitalize">{{ product.category }}</p>
                   <h3 class="font-heading text-lg text-charcoal font-semibold mb-2 group-hover:text-primary-green transition-colors line-clamp-1">
-                    {{ product.name }}
+                    {{ localizedField(product, 'name', currentLang) }}
                   </h3>
-                  <p class="text-sm text-gray-500 mb-3 line-clamp-2">{{ product.shortDescription }}</p>
+                  <p class="text-sm text-gray-500 mb-3 line-clamp-2">{{ localizedField(product, 'shortDescription', currentLang) }}</p>
 
                   <div class="flex items-center gap-2 mb-4">
                     <p-rating [ngModel]="product.rating" [readonly]="true" [cancel]="false" [stars]="5"></p-rating>
@@ -271,10 +271,10 @@ import { PaginatorState } from 'primeng/paginator';
       [header]="'shop.choose_size' | translate">
       <div *ngIf="sizeDialogProduct" class="flex flex-col gap-4 pt-2">
         <div class="flex items-center gap-3 mb-2">
-          <img [src]="sizeDialogProduct.images[0]" [alt]="sizeDialogProduct.name"
+          <img [src]="sizeDialogProduct.images[0]" [alt]="localizedField(sizeDialogProduct, 'name', currentLang)"
             class="w-14 h-14 rounded-xl object-cover flex-shrink-0" />
           <div>
-            <p class="font-heading font-semibold text-charcoal">{{ sizeDialogProduct.name }}</p>
+            <p class="font-heading font-semibold text-charcoal">{{ localizedField(sizeDialogProduct, 'name', currentLang) }}</p>
             <p class="text-xs text-gray-400 capitalize">{{ sizeDialogProduct.category }}</p>
           </div>
         </div>
@@ -313,6 +313,10 @@ import { PaginatorState } from 'primeng/paginator';
 })
 export class ShopComponent implements OnInit, OnDestroy {
   readonly getStartingPrice = getStartingPrice;
+  // Référence à la fonction de localisation pour l'utiliser dans le template
+  readonly localizedField = localizedField;
+  // Langue courante, initialisée depuis TranslateService
+  currentLang = 'fr';
 
   allProducts: Product[] = [];
   filteredProducts: Product[] = [];
@@ -359,9 +363,13 @@ export class ShopComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
+    // Initialisation de la langue courante
+    this.currentLang = this.translate.currentLang || 'fr';
     this.buildSortOptions();
     this.updateBreadcrumb();
     this.langSub.add(this.translate.onLangChange.subscribe(() => {
+      // Mise à jour de la langue lors d'un changement
+      this.currentLang = this.translate.currentLang || 'fr';
       this.buildSortOptions();
       this.updateBreadcrumb();
     }));

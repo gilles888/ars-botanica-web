@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -11,8 +11,10 @@ import { DividerModule } from 'primeng/divider';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ToastModule } from 'primeng/toast';
 import { SelectButtonModule } from 'primeng/selectbutton';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Subscription } from 'rxjs';
 import { MessageService, MenuItem } from 'primeng/api';
-import { Product, ProductVariant, getStartingPrice } from '../../core/models/product.model';
+import { Product, ProductVariant, getStartingPrice, localizedField } from '../../core/models/product.model';
 import { ProductService } from '../../core/services/product.service';
 import { CartService } from '../../core/services/cart.service';
 
@@ -23,7 +25,7 @@ import { CartService } from '../../core/services/cart.service';
     CommonModule, RouterLink, FormsModule,
     ButtonModule, RatingModule, TagModule, BreadcrumbModule,
     GalleriaModule, DividerModule, InputNumberModule, ToastModule,
-    SelectButtonModule
+    SelectButtonModule, TranslateModule
   ],
   providers: [MessageService],
   template: `
@@ -49,7 +51,7 @@ import { CartService } from '../../core/services/cart.service';
               (click)="selectedImageIndex = 0">
               <img
                 [src]="product.images[selectedImageIndex]"
-                [alt]="product.name"
+                [alt]="localizedField(product, 'name', currentLang)"
                 class="w-full h-full object-cover"
               />
               <div class="absolute top-4 left-4 flex gap-2">
@@ -80,7 +82,7 @@ import { CartService } from '../../core/services/cart.service';
           <!-- Info -->
           <div>
             <p class="text-xs text-gray-400 uppercase tracking-widest mb-2 capitalize">{{ product.category }}</p>
-            <h1 class="font-heading text-4xl text-charcoal font-bold mb-4">{{ product.name }}</h1>
+            <h1 class="font-heading text-4xl text-charcoal font-bold mb-4">{{ localizedField(product, 'name', currentLang) }}</h1>
 
             <!-- Rating -->
             <div class="flex items-center gap-3 mb-5">
@@ -116,7 +118,7 @@ import { CartService } from '../../core/services/cart.service';
             <p-divider></p-divider>
 
             <!-- Description -->
-            <p class="text-gray-600 leading-relaxed mb-6">{{ product.description }}</p>
+            <p class="text-gray-600 leading-relaxed mb-6">{{ localizedField(product, 'description', currentLang) }}</p>
 
             <!-- Tags -->
             <div class="flex flex-wrap gap-2 mb-6" *ngIf="product.occasion?.length">
@@ -186,13 +188,13 @@ import { CartService } from '../../core/services/cart.service';
               [routerLink]="['/boutique', rp.slug]">
               <div class="relative overflow-hidden aspect-[4/3]">
                 <img
-                  [src]="rp.images[0]" [alt]="rp.name"
+                  [src]="rp.images[0]" [alt]="localizedField(rp, 'name', currentLang)"
                   class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
               </div>
               <div class="p-4">
                 <h3 class="font-heading text-base text-charcoal font-semibold mb-1 group-hover:text-primary-green transition-colors">
-                  {{ rp.name }}
+                  {{ localizedField(rp, 'name', currentLang) }}
                 </h3>
                 <div class="flex items-center justify-between">
                   <span class="text-lg font-bold text-primary-green">à partir de {{ getStartingPrice(rp) }}€</span>
@@ -214,8 +216,14 @@ import { CartService } from '../../core/services/cart.service';
     </div>
   `
 })
-export class ProductDetailComponent implements OnInit {
+export class ProductDetailComponent implements OnInit, OnDestroy {
   readonly getStartingPrice = getStartingPrice;
+  // Référence à la fonction de localisation pour l'utiliser dans le template
+  readonly localizedField = localizedField;
+  // Langue courante, synchronisée avec TranslateService
+  currentLang = 'fr';
+
+  private langSub = new Subscription();
 
   product: Product | undefined;
   relatedProducts: Product[] = [];
@@ -237,7 +245,8 @@ export class ProductDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private messageService: MessageService,
-    private cartService: CartService
+    private cartService: CartService,
+    private translate: TranslateService
   ) {}
 
   sizeLabel(size: string): string {
@@ -262,7 +271,17 @@ export class ProductDetailComponent implements OnInit {
     });
   }
 
+  ngOnDestroy() {
+    this.langSub.unsubscribe();
+  }
+
   ngOnInit() {
+    // Initialisation de la langue courante et souscription aux changements
+    this.currentLang = this.translate.currentLang || 'fr';
+    this.langSub.add(this.translate.onLangChange.subscribe(() => {
+      this.currentLang = this.translate.currentLang || 'fr';
+    }));
+
     this.route.params.subscribe(params => {
       const slug = params['slug'];
       this.productService.getProductBySlug(slug).subscribe(product => {

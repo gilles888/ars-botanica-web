@@ -102,7 +102,9 @@
     "no_results_title": "Geen creaties gevonden",
     "no_results_desc": "Pas uw filters aan.",
     "reset": "Opnieuw instellen",
-    "added_to_cart": "Toegevoegd aan winkelwagen"
+    "added_to_cart": "Toegevoegd aan winkelwagen",
+    "choose_size": "Kies maat",
+    "add_to_cart_confirm": "Toevoegen aan winkelwagen"
   },
   "about": {
     "eyebrow": "Ons verhaal",

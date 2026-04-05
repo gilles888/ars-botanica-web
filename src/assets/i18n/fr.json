@@ -102,7 +102,9 @@
     "no_results_title": "Aucune création trouvée",
     "no_results_desc": "Essayez d'ajuster vos filtres.",
     "reset": "Réinitialiser",
-    "added_to_cart": "Ajouté au panier"
+    "added_to_cart": "Ajouté au panier",
+    "choose_size": "Choisir la taille",
+    "add_to_cart_confirm": "Ajouter au panier"
   },
   "about": {
     "eyebrow": "Notre histoire",

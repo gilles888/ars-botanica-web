@@ -40,6 +40,13 @@ interface ProductForm {
   isNew: boolean;
   isFeatured: boolean;
   isSeasonal: boolean;
+  // Champs de traduction EN / NL
+  nameEn: string;
+  nameNl: string;
+  shortDescriptionEn: string;
+  shortDescriptionNl: string;
+  descriptionEn: string;
+  descriptionNl: string;
 }
 
 @Component({
@@ -431,6 +438,31 @@ interface ProductForm {
             class="rounded-xl w-full" />
         </div>
 
+        <!-- Traductions -->
+        <div class="flex flex-col gap-2">
+          <button type="button" (click)="showTranslations = !showTranslations"
+            class="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-charcoal transition-colors w-fit">
+            <i class="pi" [class.pi-chevron-right]="!showTranslations" [class.pi-chevron-down]="showTranslations"></i>
+            Traductions (EN / NL)
+          </button>
+          <div *ngIf="showTranslations" class="space-y-4 pt-2 border-l-2 border-gray-100 pl-4">
+            <!-- EN -->
+            <div class="flex flex-col gap-3">
+              <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">🇬🇧 English</p>
+              <input pInputText [(ngModel)]="form.nameEn" placeholder="Product name (EN)" class="rounded-xl w-full" />
+              <input pInputText [(ngModel)]="form.shortDescriptionEn" placeholder="Short description (EN)" class="rounded-xl w-full" />
+              <textarea pInputTextarea [(ngModel)]="form.descriptionEn" rows="2" placeholder="Full description (EN)" class="rounded-xl w-full"></textarea>
+            </div>
+            <!-- NL -->
+            <div class="flex flex-col gap-3">
+              <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">🇳🇱 Nederlands</p>
+              <input pInputText [(ngModel)]="form.nameNl" placeholder="Productnaam (NL)" class="rounded-xl w-full" />
+              <input pInputText [(ngModel)]="form.shortDescriptionNl" placeholder="Korte beschrijving (NL)" class="rounded-xl w-full" />
+              <textarea pInputTextarea [(ngModel)]="form.descriptionNl" rows="2" placeholder="Volledige beschrijving (NL)" class="rounded-xl w-full"></textarea>
+            </div>
+          </div>
+        </div>
+
         <p-divider></p-divider>
 
         <!-- Checkboxes -->
@@ -472,6 +504,8 @@ interface ProductForm {
 })
 export class AdminComponent implements OnInit {
   readonly getStartingPrice = getStartingPrice;
+  // Contrôle l'affichage du panneau de traductions dans le dialog
+  showTranslations = false;
 
   products: Product[] = [];
   loading = false;
@@ -556,6 +590,13 @@ export class AdminComponent implements OnInit {
       isNew: product.isNew,
       isFeatured: product.isFeatured,
       isSeasonal: product.isSeasonal,
+      // Peuplement des champs de traduction depuis le produit
+      nameEn: (product as any).nameEn || '',
+      nameNl: (product as any).nameNl || '',
+      shortDescriptionEn: (product as any).shortDescriptionEn || '',
+      shortDescriptionNl: (product as any).shortDescriptionNl || '',
+      descriptionEn: (product as any).descriptionEn || '',
+      descriptionNl: (product as any).descriptionNl || '',
     };
     this.dialogVisible = true;
   }
@@ -685,6 +726,13 @@ export class AdminComponent implements OnInit {
       isFeatured: this.form.isFeatured,
       isSeasonal: this.form.isSeasonal,
       variants,
+      // Champs de traduction EN / NL
+      nameEn: this.form.nameEn || null,
+      nameNl: this.form.nameNl || null,
+      shortDescriptionEn: this.form.shortDescriptionEn || null,
+      shortDescriptionNl: this.form.shortDescriptionNl || null,
+      descriptionEn: this.form.descriptionEn || null,
+      descriptionNl: this.form.descriptionNl || null,
     };
 
     const req = this.editMode
@@ -738,7 +786,11 @@ export class AdminComponent implements OnInit {
       prixPetit: null, prixMoyen: null, prixGrand: null,
       category: '',
       imagesRaw: '', tagsRaw: '',
-      inStock: true, isNew: false, isFeatured: false, isSeasonal: false
+      inStock: true, isNew: false, isFeatured: false, isSeasonal: false,
+      // Initialisation des champs de traduction
+      nameEn: '', nameNl: '',
+      shortDescriptionEn: '', shortDescriptionNl: '',
+      descriptionEn: '', descriptionNl: '',
     };
   }
 }
