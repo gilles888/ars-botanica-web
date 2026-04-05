@@ -229,6 +229,7 @@ interface Order {
                     optionValue="value"
                     (onChange)="updateStatus(order, $event.value)"
                     styleClass="status-dropdown text-xs"
+                    appendTo="body"
                     [style]="getStatusStyle(order.status)">
                     <ng-template pTemplate="selectedItem">
                       <span class="text-xs font-medium">{{ getStatusLabel(order.status) }}</span>
