@@ -8,7 +8,8 @@
     "admin": "Admin",
     "admin_full": "Beheer",
     "login": "Inloggen",
-    "logout": "Uitloggen"
+    "logout": "Uitloggen",
+    "my_orders": "Mijn bestellingen"
   },
   "footer": {
     "newsletter_label": "Nieuwsbrief",

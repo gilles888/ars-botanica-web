@@ -8,7 +8,8 @@
     "admin": "Admin",
     "admin_full": "Administration",
     "login": "Sign in",
-    "logout": "Sign out"
+    "logout": "Sign out",
+    "my_orders": "My orders"
   },
   "footer": {
     "newsletter_label": "Newsletter",

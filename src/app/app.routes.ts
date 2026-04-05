@@ -39,6 +39,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/payment-cancel/payment-cancel.component').then(m => m.PaymentCancelComponent)
   },
   {
+    path: 'mes-commandes',
+    loadComponent: () => import('./pages/mes-commandes/mes-commandes.component').then(m => m.MesCommandesComponent)
+  },
+  {
     path: 'connexion',
     loadComponent: () => import('./pages/login/login.component').then(m => m.LoginComponent)
   },

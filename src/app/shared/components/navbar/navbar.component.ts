@@ -83,6 +83,13 @@ import { AuthUser } from '../../../core/models/auth-user.model';
                 <i class="pi pi-cog text-sm"></i>
                 {{ 'nav.admin' | translate }}
               </a>
+              <!-- Lien "Mes commandes" uniquement pour les utilisateurs connectés non-admin -->
+              <a *ngIf="currentUser.role !== 'ADMIN'" routerLink="/mes-commandes"
+                routerLinkActive="bg-green-100"
+                class="flex items-center gap-2 px-3 py-2 rounded-full bg-green-50 text-primary-green hover:bg-green-100 transition-colors text-sm font-medium">
+                <i class="pi pi-list text-sm"></i>
+                {{ 'nav.my_orders' | translate }}
+              </a>
               <a routerLink="/compte"
                 class="flex items-center gap-2 px-4 py-2 rounded-full bg-green-50 text-primary-green hover:bg-green-100 transition-colors text-sm font-medium">
                 <i class="pi pi-user text-sm"></i>
@@ -157,6 +164,15 @@ import { AuthUser } from '../../../core/models/auth-user.model';
                 class="flex items-center gap-3 px-4 py-3 rounded-lg text-primary-green hover:bg-green-50 transition-colors font-medium">
                 <i class="pi pi-user"></i>
                 {{ currentUser.firstName }}
+              </a>
+            </li>
+            <!-- Lien "Mes commandes" mobile : visible pour les utilisateurs connectés non-admin -->
+            <li *ngIf="currentUser && currentUser.role !== 'ADMIN'">
+              <a routerLink="/mes-commandes" (click)="closeMobile()"
+                routerLinkActive="text-primary-green bg-green-50"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg text-charcoal hover:text-primary-green hover:bg-green-50 transition-colors font-medium">
+                <i class="pi pi-list"></i>
+                {{ 'nav.my_orders' | translate }}
               </a>
             </li>
             <li *ngIf="currentUser?.role === 'ADMIN'">
