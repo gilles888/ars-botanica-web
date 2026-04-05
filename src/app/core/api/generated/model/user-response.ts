@@ -11,12 +11,15 @@
  */
 
 
-export interface UserResponse { 
+export interface UserResponse {
     id?: number;
     firstName?: string;
     lastName?: string;
     email?: string;
     phone?: string;
+    address?: string;
+    city?: string;
+    zip?: string;
     role?: UserResponseRoleEnum;
     createdAt?: string;
 }

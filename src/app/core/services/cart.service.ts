@@ -65,6 +65,44 @@ export class CartService {
     );
   }
 
+  /**
+   * Change la variante d'un item du panier.
+   * Si la nouvelle variante existe déjà dans le panier, les quantités sont fusionnées.
+   * L'ancienne ligne est supprimée après fusion.
+   */
+  changeVariant(productId: number, oldVariantId: number, newVariant: ProductVariant): void {
+    const current = this._items.value;
+    const itemToChange = current.find(
+      i => i.product.id === productId && i.variant.id === oldVariantId
+    );
+    if (!itemToChange) return;
+
+    // Vérifier si la nouvelle variante existe déjà dans le panier
+    const existingWithNewVariant = current.find(
+      i => i.product.id === productId && i.variant.id === newVariant.id
+    );
+
+    let updated: CartItem[];
+    if (existingWithNewVariant) {
+      // Fusion : additionner les quantités sur la ligne existante, supprimer l'ancienne
+      updated = current
+        .filter(i => !(i.product.id === productId && i.variant.id === oldVariantId))
+        .map(i =>
+          i.product.id === productId && i.variant.id === newVariant.id
+            ? { ...i, quantity: i.quantity + itemToChange.quantity }
+            : i
+        );
+    } else {
+      // Simple remplacement de la variante
+      updated = current.map(i =>
+        i.product.id === productId && i.variant.id === oldVariantId
+          ? { ...i, variant: newVariant }
+          : i
+      );
+    }
+    this.setState(updated);
+  }
+
   clearCart(): void {
     this.setState([]);
   }

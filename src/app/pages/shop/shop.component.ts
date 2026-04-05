@@ -15,10 +15,11 @@ import { BreadcrumbModule } from 'primeng/breadcrumb';
 import { DividerModule } from 'primeng/divider';
 import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
+import { DialogModule } from 'primeng/dialog';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subscription, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { Product, getStartingPrice } from '../../core/models/product.model';
+import { Product, ProductVariant, getStartingPrice } from '../../core/models/product.model';
 import { ProductService } from '../../core/services/product.service';
 import { CartService } from '../../core/services/cart.service';
 import { MenuItem, MessageService } from 'primeng/api';
@@ -32,7 +33,7 @@ import { PaginatorState } from 'primeng/paginator';
     CardModule, ButtonModule, SliderModule, CheckboxModule,
     DropdownModule, TagModule, RatingModule, PaginatorModule,
     InputTextModule, BreadcrumbModule, DividerModule, ToastModule, TooltipModule,
-    TranslateModule
+    DialogModule, TranslateModule
   ],
   providers: [MessageService],
   template: `
@@ -259,6 +260,55 @@ import { PaginatorState } from 'primeng/paginator';
         </div>
       </div>
     </div>
+
+    <!-- Dialog de sélection de taille -->
+    <p-dialog
+      [(visible)]="sizeDialogVisible"
+      [modal]="true"
+      [closable]="true"
+      [style]="{ width: '420px' }"
+      styleClass="size-picker-dialog"
+      [header]="'shop.choose_size' | translate">
+      <div *ngIf="sizeDialogProduct" class="flex flex-col gap-4 pt-2">
+        <div class="flex items-center gap-3 mb-2">
+          <img [src]="sizeDialogProduct.images[0]" [alt]="sizeDialogProduct.name"
+            class="w-14 h-14 rounded-xl object-cover flex-shrink-0" />
+          <div>
+            <p class="font-heading font-semibold text-charcoal">{{ sizeDialogProduct.name }}</p>
+            <p class="text-xs text-gray-400 capitalize">{{ sizeDialogProduct.category }}</p>
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          <label *ngFor="let variant of sizeDialogProduct.variants"
+            class="flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all"
+            [class.border-primary-green]="selectedVariant?.id === variant.id"
+            [class.bg-green-50]="selectedVariant?.id === variant.id"
+            [class.border-gray-200]="selectedVariant?.id !== variant.id"
+            (click)="selectedVariant = variant">
+            <div class="flex items-center gap-3">
+              <div class="w-4 h-4 rounded-full border-2 flex items-center justify-center"
+                [class.border-primary-green]="selectedVariant?.id === variant.id"
+                [class.border-gray-300]="selectedVariant?.id !== variant.id">
+                <div *ngIf="selectedVariant?.id === variant.id"
+                  class="w-2 h-2 rounded-full bg-primary-green"></div>
+              </div>
+              <span class="font-medium text-charcoal">{{ sizeLabel(variant.size) }}</span>
+            </div>
+            <span class="font-bold text-primary-green">{{ variant.price }}€</span>
+          </label>
+        </div>
+
+        <button pButton
+          [label]="'shop.add_to_cart_confirm' | translate"
+          icon="pi pi-shopping-cart"
+          class="w-full mt-2"
+          [disabled]="!selectedVariant"
+          (click)="confirmAddToCart()"
+          style="background: #5a8a4a; border: none; border-radius: 2rem; padding: 0.85rem;">
+        </button>
+      </div>
+    </p-dialog>
   `
 })
 export class ShopComponent implements OnInit, OnDestroy {
@@ -267,6 +317,11 @@ export class ShopComponent implements OnInit, OnDestroy {
   allProducts: Product[] = [];
   filteredProducts: Product[] = [];
   pagedProducts: Product[] = [];
+
+  // Propriétés pour la dialog de sélection de taille
+  sizeDialogVisible = false;
+  sizeDialogProduct: Product | null = null;
+  selectedVariant: ProductVariant | null = null;
 
   searchQuery = '';
   priceRange = [0, 300];
@@ -358,15 +413,45 @@ export class ShopComponent implements OnInit, OnDestroy {
 
   addToCart(product: Product, event: Event): void {
     event.stopPropagation();
-    const variant = product.variants?.find(v => v.size === 'PETIT') ?? product.variants?.[0];
-    if (!variant) return;
-    this.cartService.addItem(product, variant);
+    if (!product.variants?.length) return;
+
+    // Si un seul variant disponible, ajout direct sans dialog
+    if (product.variants.length === 1) {
+      this.cartService.addItem(product, product.variants[0]);
+      this.messageService.add({
+        severity: 'success',
+        summary: this.translate.instant('shop.added_to_cart'),
+        detail: product.name,
+        life: 2500
+      });
+      return;
+    }
+
+    // Plusieurs variants : ouvrir la dialog de sélection de taille
+    this.sizeDialogProduct = product;
+    this.selectedVariant = product.variants.find(v => v.size === 'PETIT') ?? product.variants[0];
+    this.sizeDialogVisible = true;
+  }
+
+  /** Confirme l'ajout au panier depuis la dialog de sélection de taille */
+  confirmAddToCart(): void {
+    if (!this.sizeDialogProduct || !this.selectedVariant) return;
+    this.cartService.addItem(this.sizeDialogProduct, this.selectedVariant);
     this.messageService.add({
       severity: 'success',
       summary: this.translate.instant('shop.added_to_cart'),
-      detail: product.name,
+      detail: `${this.sizeDialogProduct.name} — ${this.sizeLabel(this.selectedVariant.size)}`,
       life: 2500
     });
+    this.sizeDialogVisible = false;
+    this.sizeDialogProduct = null;
+    this.selectedVariant = null;
+  }
+
+  /** Retourne le libellé lisible d'une taille */
+  sizeLabel(size: string): string {
+    const labels: Record<string, string> = { PETIT: 'Petit', MOYEN: 'Moyen', GRAND: 'Grand' };
+    return labels[size] ?? size;
   }
 
   applyFilters() {

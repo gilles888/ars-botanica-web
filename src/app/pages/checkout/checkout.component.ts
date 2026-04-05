@@ -15,6 +15,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 import { CartService } from '../../core/services/cart.service';
 import { AuthService } from '../../core/services/auth.service';
+import { UtilisateursService } from '../../core/api/generated/api/utilisateurs.service';
 import { environment } from '../../../environments/environment';
 import { loadStripe, StripeEmbeddedCheckout } from '@stripe/stripe-js';
 
@@ -303,15 +304,38 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     private router: Router,
     private authService: AuthService,
     private http: HttpClient,
+    private utilisateursService: UtilisateursService,
     private translate: TranslateService
   ) {}
 
   ngOnInit() {
     if (!this.authService.isLoggedIn()) {
       this.router.navigate(['/connexion'], { queryParams: { returnUrl: '/commande' } });
+      return;
     }
     this.buildSteps();
     this.langSub.add(this.translate.onLangChange.subscribe(() => this.buildSteps()));
+
+    // Pré-remplir les champs depuis le token JWT (disponible immédiatement)
+    const currentUser = this.authService.currentUser$.value;
+    if (currentUser) {
+      this.info.firstName = currentUser.firstName;
+      this.info.lastName = currentUser.lastName;
+      this.info.email = currentUser.email;
+    }
+
+    // Pré-remplir les données complémentaires depuis GET /api/users/me
+    this.utilisateursService.getMe().subscribe({
+      next: (profil) => {
+        if (profil.phone) this.info.phone = profil.phone;
+        if (profil.address) this.delivery.address = profil.address;
+        if (profil.city) this.delivery.city = profil.city;
+        if (profil.zip) this.delivery.zip = profil.zip;
+      },
+      error: () => {
+        // Echec silencieux : l'utilisateur remplit les champs manuellement
+      }
+    });
   }
 
   ngOnDestroy() {

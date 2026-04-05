@@ -6,17 +6,19 @@ import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { DividerModule } from 'primeng/divider';
 import { ToastModule } from 'primeng/toast';
+import { DropdownModule } from 'primeng/dropdown';
 import { MessageService } from 'primeng/api';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CartService } from '../../core/services/cart.service';
 import { CartItem } from '../../core/models/cart-item.model';
+import { ProductVariant } from '../../core/models/product.model';
 
 @Component({
   selector: 'app-cart',
   standalone: true,
   imports: [
     CommonModule, RouterLink, FormsModule,
-    ButtonModule, TableModule, DividerModule, ToastModule, TranslateModule
+    ButtonModule, TableModule, DividerModule, ToastModule, DropdownModule, TranslateModule
   ],
   providers: [MessageService],
   template: `
@@ -72,19 +74,35 @@ import { CartItem } from '../../core/models/cart-item.model';
                 <div class="grid grid-cols-12 gap-4 items-center px-6 py-5"
                   [class.border-b]="!last" [class.border-gray-100]="!last">
 
-                  <!-- Image + name -->
+                  <!-- Image + nom + sélecteur de taille -->
                   <div class="col-span-12 md:col-span-6 flex items-center gap-4">
                     <a [routerLink]="['/boutique', item.product.slug]" class="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
                       <img [src]="item.product.images[0]" [alt]="item.product.name"
                         class="w-full h-full object-cover hover:scale-105 transition-transform" />
                     </a>
-                    <div>
+                    <div class="min-w-0">
                       <a [routerLink]="['/boutique', item.product.slug]"
                         class="font-heading text-base font-semibold text-charcoal hover:text-primary-green transition-colors line-clamp-2">
                         {{ item.product.name }}
                       </a>
                       <p class="text-xs text-gray-400 mt-1 capitalize">{{ item.product.category }}</p>
-                      <p class="text-xs text-gray-500 mt-0.5 font-medium">{{ sizeLabel(item.variant.size) }}</p>
+
+                      <!-- Sélecteur de taille : dropdown si plusieurs variants, label simple sinon -->
+                      <div *ngIf="hasMultipleVariants(item)" class="mt-1.5">
+                        <p-dropdown
+                          [options]="getVariantOptions(item)"
+                          [ngModel]="item.variant.id"
+                          (ngModelChange)="onVariantChange(item, $event)"
+                          optionLabel="label"
+                          optionValue="value"
+                          styleClass="text-xs h-7 rounded-lg variant-dropdown"
+                          [style]="{ fontSize: '0.75rem', height: '1.75rem', minWidth: '120px' }">
+                        </p-dropdown>
+                      </div>
+                      <p *ngIf="!hasMultipleVariants(item)"
+                        class="text-xs text-gray-500 mt-0.5 font-medium">
+                        {{ sizeLabel(item.variant.size) }}
+                      </p>
                     </div>
                   </div>
 
@@ -225,5 +243,26 @@ export class CartComponent {
 
   clearCart(): void {
     this.cartService.clearCart();
+  }
+
+  /** Retourne true si le produit de l'item possède plusieurs variants */
+  hasMultipleVariants(item: CartItem): boolean {
+    return (item.product.variants?.length ?? 0) > 1;
+  }
+
+  /** Construit les options du dropdown de variante pour un item du panier */
+  getVariantOptions(item: CartItem): { label: string; value: number }[] {
+    return (item.product.variants ?? []).map(v => ({
+      label: `${this.sizeLabel(v.size)} — ${v.price}€`,
+      value: v.id
+    }));
+  }
+
+  /** Appelé quand l'utilisateur change la taille d'un item via le dropdown */
+  onVariantChange(item: CartItem, newVariantId: number): void {
+    if (newVariantId === item.variant.id) return;
+    const newVariant: ProductVariant | undefined = item.product.variants?.find(v => v.id === newVariantId);
+    if (!newVariant) return;
+    this.cartService.changeVariant(item.product.id, item.variant.id, newVariant);
   }
 }
