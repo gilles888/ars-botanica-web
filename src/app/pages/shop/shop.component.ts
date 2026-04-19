@@ -208,7 +208,7 @@ import { PaginatorState } from 'primeng/paginator';
                 </div>
 
                 <div class="p-5">
-                  <p class="text-xs text-gray-400 uppercase tracking-wider mb-1 capitalize">{{ product.category }}</p>
+                  <p class="text-xs text-gray-400 uppercase tracking-wider mb-1">{{ 'shop.cat_' + product.category.toLowerCase() | translate }}</p>
                   <h3 class="font-heading text-lg text-charcoal font-semibold mb-2 group-hover:text-primary-green transition-colors line-clamp-1">
                     {{ localizedField(product, 'name', currentLang) }}
                   </h3>
