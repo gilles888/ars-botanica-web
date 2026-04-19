@@ -37,7 +37,7 @@ import { TranslateModule } from '@ngx-translate/core';
               <div class="flex items-center gap-4">
                 <img
                   src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&q=80"
-                  alt="Marie Lecomte"
+                  alt="François"
                   class="w-16 h-16 rounded-full object-cover shadow-md"
                 />
                 <div>
@@ -119,7 +119,7 @@ import { TranslateModule } from '@ngx-translate/core';
             <h2 class="font-heading text-4xl text-charcoal">{{ 'about.team_title' | translate }}</h2>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-3xl mx-auto">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 max-w-2xl mx-auto">
             <div *ngFor="let member of team" class="text-center">
               <img [src]="member.photo" [alt]="member.name"
                 class="w-32 h-32 rounded-full object-cover mx-auto mb-4 shadow-md" />
@@ -166,22 +166,16 @@ export class AboutComponent {
 
   team = [
     {
-      name: 'Marie Lecomte',
+      name: 'François',
       roleKey: 'about.member1_role',
       bioKey: 'about.member1_bio',
       photo: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop&q=80'
     },
     {
-      name: 'Sophie Arnaud',
+      name: 'Axel',
       roleKey: 'about.member2_role',
       bioKey: 'about.member2_bio',
-      photo: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop&q=80'
-    },
-    {
-      name: 'Léa Martin',
-      roleKey: 'about.member3_role',
-      bioKey: 'about.member3_bio',
-      photo: 'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=200&h=200&fit=crop&q=80'
+      photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&q=80'
     }
   ];
 }
