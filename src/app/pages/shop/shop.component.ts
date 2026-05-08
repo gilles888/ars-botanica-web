@@ -374,6 +374,8 @@ export class ShopComponent implements OnInit, OnDestroy {
         this.currentLang = event.lang;
         this.buildSortOptions();
         this.updateBreadcrumb();
+        // Recharger les produits pour obtenir les données dans la nouvelle langue
+        this.loadProducts();
       });
     }));
 

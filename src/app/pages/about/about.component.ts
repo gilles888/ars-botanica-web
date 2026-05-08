@@ -36,7 +36,7 @@ import { TranslateModule } from '@ngx-translate/core';
               <p class="text-gray-600 leading-relaxed mb-8">{{ 'about.founder_p3' | translate }}</p>
               <div class="flex items-center gap-4">
                 <img
-                  src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&q=80"
+                  src="/uploads/francois.jpg"
                   alt="François"
                   class="w-16 h-16 rounded-full object-cover shadow-md"
                 />
@@ -47,15 +47,9 @@ import { TranslateModule } from '@ngx-translate/core';
               </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
-              <img src="https://images.unsplash.com/photo-1525310072745-f49212b5ac6d?w=400&q=80" alt="Atelier"
-                class="rounded-2xl object-cover h-56 w-full shadow-lg" />
-              <img src="https://images.unsplash.com/photo-1490750967868-88df5691cc36?w=400&q=80" alt="Fleurs"
-                class="rounded-2xl object-cover h-56 w-full shadow-lg mt-8" />
-              <img src="https://images.unsplash.com/photo-1559563362-c667ba5f5480?w=400&q=80" alt="Création"
-                class="rounded-2xl object-cover h-56 w-full shadow-lg" />
-              <img src="https://images.unsplash.com/photo-1468327768560-75b778cbb551?w=400&q=80" alt="Bouquet"
-                class="rounded-2xl object-cover h-56 w-full shadow-lg mt-8" />
+            <div class="flex items-center justify-center">
+              <img src="/uploads/logo.jpg" alt="Logo Ars Botanica"
+                class="w-full max-w-lg rounded-3xl shadow-2xl object-contain" />
             </div>
           </div>
         </div>
@@ -157,11 +151,11 @@ export class AboutComponent {
   ];
 
   timeline = [
-    { year: '2012', titleKey: 'about.tl_2012_title', descKey: 'about.tl_2012_desc', icon: 'pi pi-home' },
-    { year: '2015', titleKey: 'about.tl_2015_title', descKey: 'about.tl_2015_desc', icon: 'pi pi-heart' },
-    { year: '2018', titleKey: 'about.tl_2018_title', descKey: 'about.tl_2018_desc', icon: 'pi pi-building' },
-    { year: '2021', titleKey: 'about.tl_2021_title', descKey: 'about.tl_2021_desc', icon: 'pi pi-verified' },
-    { year: '2024', titleKey: 'about.tl_2024_title', descKey: 'about.tl_2024_desc', icon: 'pi pi-globe' },
+    { year: '~2000', titleKey: 'about.tl_2012_title', descKey: 'about.tl_2012_desc', icon: 'pi pi-home' },
+    { year: '2018',  titleKey: 'about.tl_2015_title', descKey: 'about.tl_2015_desc', icon: 'pi pi-leaf' },
+    { year: '2021',  titleKey: 'about.tl_2018_title', descKey: 'about.tl_2018_desc', icon: 'pi pi-compass' },
+    { year: '2023',  titleKey: 'about.tl_2021_title', descKey: 'about.tl_2021_desc', icon: 'pi pi-verified' },
+    { year: '2024',  titleKey: 'about.tl_2024_title', descKey: 'about.tl_2024_desc', icon: 'pi pi-sun' },
   ];
 
   team = [
@@ -169,13 +163,13 @@ export class AboutComponent {
       name: 'François',
       roleKey: 'about.member1_role',
       bioKey: 'about.member1_bio',
-      photo: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop&q=80'
+      photo: '/uploads/francois.jpg'
     },
     {
       name: 'Axel',
       roleKey: 'about.member2_role',
       bioKey: 'about.member2_bio',
-      photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&q=80'
+      photo: '/uploads/axel.jpg'
     }
   ];
 }

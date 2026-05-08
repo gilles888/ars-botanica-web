@@ -6,6 +6,7 @@ import { provideTranslateService } from '@ngx-translate/core';
 import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
+import { langInterceptor } from './core/interceptors/lang.interceptor';
 import { environment } from '../environments/environment';
 import { BASE_PATH, Configuration } from './core/api/generated';
 
@@ -23,7 +24,8 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes, withViewTransitions()),
     provideAnimations(),
-    provideHttpClient(withInterceptors([authInterceptor])),
+    // langInterceptor en premier pour envoyer Accept-Language avant que authInterceptor ajoute le JWT
+    provideHttpClient(withInterceptors([langInterceptor, authInterceptor])),
     provideTranslateService({ fallbackLang: 'fr' }),
     ...provideTranslateHttpLoader({ prefix: '/assets/i18n/', suffix: '.json' }),
 

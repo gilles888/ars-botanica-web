@@ -101,15 +101,15 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
             <ul class="space-y-3 text-sm">
               <li class="flex items-start gap-3 text-gray-400">
                 <i class="pi pi-map-marker text-primary-green mt-0.5 flex-shrink-0"></i>
-                <span>12 Rue des Fleurs<br>75004 Paris</span>
+                <span>Rue Froissart, 117<br>1040 Etterbeek — Belgique</span>
               </li>
               <li class="flex items-center gap-3 text-gray-400">
                 <i class="pi pi-phone text-primary-green flex-shrink-0"></i>
-                <span>+33 1 42 00 00 00</span>
+                <span>02 428 83 04</span>
               </li>
               <li class="flex items-center gap-3 text-gray-400">
                 <i class="pi pi-envelope text-primary-green flex-shrink-0"></i>
-                <span>bonjour&#64;ars-botanica.fr</span>
+                <span>arsbotanica&#64;outlook.com</span>
               </li>
               <li class="flex items-start gap-3 text-gray-400">
                 <i class="pi pi-clock text-primary-green mt-0.5 flex-shrink-0"></i>
@@ -140,9 +140,8 @@ export class FooterComponent {
   currentYear = new Date().getFullYear();
 
   socials = [
-    { name: 'Instagram', icon: 'pi pi-instagram', url: '#' },
-    { name: 'Facebook', icon: 'pi pi-facebook', url: '#' },
-    { name: 'Pinterest', icon: 'pi pi-map', url: '#' },
+    { name: 'Instagram', icon: 'pi pi-instagram', url: 'https://www.instagram.com/arsbotanica.bxl/' },
+    { name: 'Facebook', icon: 'pi pi-facebook', url: 'https://www.facebook.com/p/Ars-Botanica-61570629105506/' },
   ];
 
   footerLinks = [

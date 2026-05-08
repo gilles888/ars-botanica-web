@@ -157,6 +157,17 @@ import { CartService } from '../../core/services/cart.service';
                   (click)="addToCart()">
                 </button>
               </div>
+              <!-- Voir le panier -->
+              <a routerLink="/panier" *ngIf="cartService.cartItems().length > 0"
+                class="flex items-center justify-center gap-2 w-full py-3 px-5 rounded-full border-2 font-medium transition-all hover:bg-green-50"
+                style="border-color: #5a8a4a; color: #5a8a4a;">
+                <i class="pi pi-shopping-bag"></i>
+                Voir le panier
+                <span class="inline-flex items-center justify-center w-5 h-5 rounded-full text-white text-xs font-bold"
+                  style="background: #5a8a4a;">
+                  {{ cartService.cartItems().length }}
+                </span>
+              </a>
               <!-- Custom order link -->
               <div class="bg-green-50 rounded-xl p-4 flex items-start gap-3">
                 <i class="pi pi-info-circle text-primary-green mt-0.5 flex-shrink-0"></i>
@@ -245,7 +256,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private messageService: MessageService,
-    private cartService: CartService,
+    public cartService: CartService,
     private translate: TranslateService,
     private cdr: ChangeDetectorRef,
     private ngZone: NgZone
@@ -278,17 +289,22 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    // Initialisation de la langue courante et souscription aux changements
-    this.currentLang = this.translate.currentLang || 'fr';
+    this.currentLang = localStorage.getItem('lang') || 'fr';
     this.langSub.add(this.translate.onLangChange.subscribe((event) => {
       this.ngZone.run(() => {
         this.currentLang = event.lang;
+        const slug = this.route.snapshot.params['slug'];
+        if (slug) this.loadProduct(slug);
       });
     }));
 
     this.route.params.subscribe(params => {
-      const slug = params['slug'];
-      this.productService.getProductBySlug(slug).subscribe(product => {
+      this.loadProduct(params['slug']);
+    });
+  }
+
+  private loadProduct(slug: string) {
+    this.productService.getProductBySlug(slug).subscribe(product => {
         if (!product) {
           this.router.navigate(['/boutique']);
           return;
@@ -304,6 +320,5 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
         this.selectedImageIndex = 0;
         window.scrollTo({ top: 0, behavior: 'smooth' });
       });
-    });
   }
 }

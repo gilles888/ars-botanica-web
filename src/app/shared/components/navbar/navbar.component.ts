@@ -26,16 +26,8 @@ import { AuthUser } from '../../../core/models/auth-user.model';
         <nav class="flex items-center justify-between h-20">
 
           <!-- Logo -->
-          <a routerLink="/" class="flex items-center gap-2 group">
-            <div class="w-9 h-9 rounded-full bg-primary-green flex items-center justify-center">
-              <i class="pi pi-heart text-white text-sm"></i>
-            </div>
-            <div>
-              <span class="font-heading text-xl font-semibold text-charcoal group-hover:text-primary-green transition-colors">
-                Ars
-              </span>
-              <span class="font-heading text-xl text-primary-green"> Botanica</span>
-            </div>
+          <a routerLink="/" class="flex items-center group">
+            <img src="/uploads/logo.jpg" alt="Ars Botanica" class="h-12 w-auto object-contain group-hover:opacity-80 transition-opacity" />
           </a>
 
           <!-- Desktop Nav -->

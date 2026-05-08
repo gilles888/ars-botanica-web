@@ -35,6 +35,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/payment-success/payment-success.component').then(m => m.PaymentSuccessComponent)
   },
   {
+    path: 'commande/confirmation',
+    loadComponent: () => import('./pages/payment-success/payment-success.component').then(m => m.PaymentSuccessComponent)
+  },
+  {
     path: 'commande/annuler',
     loadComponent: () => import('./pages/payment-cancel/payment-cancel.component').then(m => m.PaymentCancelComponent)
   },

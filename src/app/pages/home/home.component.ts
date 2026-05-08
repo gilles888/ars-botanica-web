@@ -74,13 +74,12 @@ import { Product, Category, Testimonial } from '../../core/models/product.model'
 
             <!-- Hero image -->
             <div class="relative hidden lg:block">
-              <div class="relative rounded-[3rem] overflow-hidden aspect-[4/5] shadow-2xl">
+              <div class="relative rounded-[3rem] overflow-hidden aspect-[4/5] shadow-2xl bg-cream flex items-center justify-center">
                 <img
-                  src="https://images.unsplash.com/photo-1487530811176-3780de880c2d?w=700&q=85"
-                  alt="Bouquet Ars Botanica"
-                  class="w-full h-full object-cover"
+                  src="/uploads/logo.jpg"
+                  alt="Logo Ars Botanica"
+                  class="w-full h-full object-contain p-8"
                 />
-                <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
               </div>
               <div class="absolute -bottom-6 -left-6 bg-white rounded-2xl shadow-xl p-4 flex items-center gap-3">
                 <div class="w-12 h-12 rounded-xl bg-rose-pastel/20 flex items-center justify-center">
@@ -195,15 +194,9 @@ import { Product, Category, Testimonial } from '../../core/models/product.model'
       <section class="section-padding bg-white overflow-hidden">
         <div class="container-custom">
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div class="relative h-96 lg:h-[520px]">
-              <img src="https://images.unsplash.com/photo-1525310072745-f49212b5ac6d?w=500&q=80" alt="Atelier"
-                class="absolute top-0 left-0 w-2/3 h-3/4 object-cover rounded-2xl shadow-xl" />
-              <img src="https://images.unsplash.com/photo-1490750967868-88df5691cc36?w=400&q=80" alt="Fleurs"
-                class="absolute bottom-0 right-0 w-1/2 h-1/2 object-cover rounded-2xl shadow-xl" />
-              <div class="absolute top-1/2 right-6 -translate-y-1/2 bg-primary-green text-white rounded-2xl p-5 shadow-xl text-center">
-                <p class="font-heading text-4xl font-bold">12</p>
-                <p class="text-xs text-green-100 font-medium" [innerHTML]="'home.about_years' | translate"></p>
-              </div>
+            <div class="relative h-96 lg:h-[520px] flex items-center justify-center">
+              <img src="/uploads/logo.jpg" alt="Logo Ars Botanica"
+                class="w-full h-full object-contain rounded-2xl" />
             </div>
 
             <div>
