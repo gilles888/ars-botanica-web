@@ -92,31 +92,33 @@ interface Order {
 
       <!-- Stats -->
       <div class="container-custom py-8">
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
 
-          <div class="bg-white rounded-2xl shadow-sm p-6">
+        <!-- Ligne 1 : KPI principaux -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-5">
+
+          <div class="bg-white rounded-2xl shadow-sm p-6 border-l-4 border-primary-green">
             <div class="flex items-center justify-between mb-3">
-              <p class="text-xs text-gray-400 uppercase tracking-wide">Chiffre d'affaires</p>
+              <p class="text-xs text-gray-400 uppercase tracking-wide">CA total</p>
               <div class="w-9 h-9 rounded-full bg-green-50 flex items-center justify-center">
                 <i class="pi pi-euro text-primary-green text-sm"></i>
               </div>
             </div>
             <p class="text-2xl font-bold text-charcoal">{{ totalRevenue | number:'1.2-2' }}€</p>
-            <p class="text-xs text-gray-400 mt-1">Commandes livrées</p>
+            <p class="text-xs text-gray-400 mt-1">Commandes payées</p>
           </div>
 
-          <div class="bg-white rounded-2xl shadow-sm p-6">
+          <div class="bg-white rounded-2xl shadow-sm p-6 border-l-4 border-blue-400">
             <div class="flex items-center justify-between mb-3">
-              <p class="text-xs text-gray-400 uppercase tracking-wide">Commandes</p>
+              <p class="text-xs text-gray-400 uppercase tracking-wide">CA ce mois</p>
               <div class="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center">
-                <i class="pi pi-shopping-bag text-blue-500 text-sm"></i>
+                <i class="pi pi-calendar text-blue-500 text-sm"></i>
               </div>
             </div>
-            <p class="text-2xl font-bold text-charcoal">{{ orders.length }}</p>
-            <p class="text-xs text-gray-400 mt-1">Total toutes périodes</p>
+            <p class="text-2xl font-bold text-charcoal">{{ revenueThisMonth | number:'1.2-2' }}€</p>
+            <p class="text-xs text-gray-400 mt-1">{{ ordersThisMonth }} commande(s)</p>
           </div>
 
-          <div class="bg-white rounded-2xl shadow-sm p-6">
+          <div class="bg-white rounded-2xl shadow-sm p-6 border-l-4 border-purple-400">
             <div class="flex items-center justify-between mb-3">
               <p class="text-xs text-gray-400 uppercase tracking-wide">Panier moyen</p>
               <div class="w-9 h-9 rounded-full bg-purple-50 flex items-center justify-center">
@@ -127,15 +129,67 @@ interface Order {
             <p class="text-xs text-gray-400 mt-1">Hors annulées</p>
           </div>
 
-          <div class="bg-white rounded-2xl shadow-sm p-6">
+          <div class="bg-white rounded-2xl shadow-sm p-6 border-l-4 border-orange-400">
             <div class="flex items-center justify-between mb-3">
-              <p class="text-xs text-gray-400 uppercase tracking-wide">En attente</p>
+              <p class="text-xs text-gray-400 uppercase tracking-wide">À traiter</p>
               <div class="w-9 h-9 rounded-full bg-orange-50 flex items-center justify-center">
                 <i class="pi pi-clock text-orange-400 text-sm"></i>
               </div>
             </div>
             <p class="text-2xl font-bold text-charcoal">{{ pendingCount }}</p>
-            <p class="text-xs text-gray-400 mt-1">À traiter</p>
+            <p class="text-xs text-gray-400 mt-1">Payées / en attente</p>
+          </div>
+        </div>
+
+        <!-- Ligne 2 : stats secondaires -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+
+          <div class="bg-white rounded-2xl shadow-sm p-5">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center flex-shrink-0">
+                <i class="pi pi-users text-teal-500 text-sm"></i>
+              </div>
+              <div>
+                <p class="text-xs text-gray-400 uppercase tracking-wide">Clients</p>
+                <p class="text-xl font-bold text-charcoal">{{ userCount }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl shadow-sm p-5">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center flex-shrink-0">
+                <i class="pi pi-shopping-bag text-indigo-500 text-sm"></i>
+              </div>
+              <div>
+                <p class="text-xs text-gray-400 uppercase tracking-wide">Commandes totales</p>
+                <p class="text-xl font-bold text-charcoal">{{ orders.length }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl shadow-sm p-5">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-rose-50 flex items-center justify-center flex-shrink-0">
+                <i class="pi pi-heart text-rose-400 text-sm"></i>
+              </div>
+              <div>
+                <p class="text-xs text-gray-400 uppercase tracking-wide">Bouquets vendus</p>
+                <p class="text-xl font-bold text-charcoal">{{ totalQuantitySold }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl shadow-sm p-5">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center flex-shrink-0">
+                <i class="pi pi-check-circle text-primary-green text-sm"></i>
+              </div>
+              <div>
+                <p class="text-xs text-gray-400 uppercase tracking-wide">Livrées</p>
+                <p class="text-xl font-bold text-charcoal">{{ countByStatus('DELIVERED') }}</p>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -440,6 +494,7 @@ interface Order {
 })
 export class SalesComponent implements OnInit {
   orders: Order[] = [];
+  userCount = 0;
   loading = false;
   activeFilter = 'ALL';
   detailVisible = false;
@@ -454,6 +509,7 @@ export class SalesComponent implements OnInit {
 
   statusFilters = [
     { label: 'Toutes', value: 'ALL', activeClass: 'border-charcoal bg-charcoal text-white' },
+    { label: 'Payées', value: 'PAID', activeClass: 'border-emerald-400 bg-emerald-50 text-emerald-700' },
     { label: 'En attente', value: 'PENDING', activeClass: 'border-orange-400 bg-orange-50 text-orange-600' },
     { label: 'Confirmées', value: 'CONFIRMED', activeClass: 'border-blue-400 bg-blue-50 text-blue-600' },
     { label: 'En préparation', value: 'PREPARING', activeClass: 'border-purple-400 bg-purple-50 text-purple-600' },
@@ -463,6 +519,7 @@ export class SalesComponent implements OnInit {
   ];
 
   statusOptions = [
+    { label: 'Payée', value: 'PAID' },
     { label: 'En attente', value: 'PENDING' },
     { label: 'Confirmée', value: 'CONFIRMED' },
     { label: 'En préparation', value: 'PREPARING' },
@@ -476,20 +533,45 @@ export class SalesComponent implements OnInit {
     return this.orders.filter(o => o.status === this.activeFilter);
   }
 
+  private readonly PAID_STATUSES = ['PAID', 'CONFIRMED', 'PREPARING', 'SHIPPED', 'DELIVERED'];
+
   get totalRevenue(): number {
     return this.orders
-      .filter(o => o.status === 'DELIVERED')
+      .filter(o => this.PAID_STATUSES.includes(o.status))
       .reduce((sum, o) => sum + o.total, 0);
   }
 
+  get revenueThisMonth(): number {
+    const now = new Date();
+    return this.orders
+      .filter(o => this.PAID_STATUSES.includes(o.status) && this.isSameMonth(o.createdAt, now))
+      .reduce((sum, o) => sum + o.total, 0);
+  }
+
+  get ordersThisMonth(): number {
+    const now = new Date();
+    return this.orders.filter(o => o.status !== 'PAYMENT_PENDING' && this.isSameMonth(o.createdAt, now)).length;
+  }
+
+  get totalQuantitySold(): number {
+    return this.orders
+      .filter(o => this.PAID_STATUSES.includes(o.status))
+      .reduce((sum, o) => sum + o.items.reduce((s, i) => s + i.quantity, 0), 0);
+  }
+
   get avgBasket(): number {
-    const active = this.orders.filter(o => o.status !== 'CANCELLED');
+    const active = this.orders.filter(o => this.PAID_STATUSES.includes(o.status));
     if (!active.length) return 0;
     return active.reduce((sum, o) => sum + o.total, 0) / active.length;
   }
 
   get pendingCount(): number {
-    return this.orders.filter(o => o.status === 'PENDING').length;
+    return this.orders.filter(o => o.status === 'PAID' || o.status === 'PENDING').length;
+  }
+
+  private isSameMonth(dateStr: string, ref: Date): boolean {
+    const d = new Date(dateStr);
+    return d.getFullYear() === ref.getFullYear() && d.getMonth() === ref.getMonth();
   }
 
   countByStatus(status: string): number {
@@ -507,6 +589,7 @@ export class SalesComponent implements OnInit {
 
   getStatusStyle(status: string): Record<string, string> {
     const styles: Record<string, Record<string, string>> = {
+      PAID:       { background: '#ecfdf5', color: '#065f46', border: '1px solid #a7f3d0', borderRadius: '2rem' },
       PENDING:    { background: '#fff7ed', color: '#c2410c', border: '1px solid #fed7aa', borderRadius: '2rem' },
       CONFIRMED:  { background: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe', borderRadius: '2rem' },
       PREPARING:  { background: '#faf5ff', color: '#7c3aed', border: '1px solid #e9d5ff', borderRadius: '2rem' },
@@ -527,6 +610,10 @@ export class SalesComponent implements OnInit {
     const user = this.authService.currentUser$.value;
     this.adminName = user ? `${user.firstName} ${user.lastName}` : '';
     this.loadOrders();
+    this.http.get<any[]>(`${environment.apiUrl}/users`).subscribe({
+      next: (users) => this.userCount = users.length,
+      error: () => {}
+    });
   }
 
   loadOrders() {
