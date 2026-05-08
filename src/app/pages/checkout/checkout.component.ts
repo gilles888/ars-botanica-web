@@ -15,7 +15,6 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 import { CartService } from '../../core/services/cart.service';
 import { AuthService } from '../../core/services/auth.service';
-import { UtilisateursService } from '../../core/api/generated/api/utilisateurs.service';
 import { environment } from '../../../environments/environment';
 import { loadStripe, StripeEmbeddedCheckout } from '@stripe/stripe-js';
 
@@ -94,6 +93,19 @@ import { loadStripe, StripeEmbeddedCheckout } from '@stripe/stripe-js';
               <!-- ── ÉTAPE 1 : Livraison ────────────────── -->
               <div *ngIf="step === 1" class="bg-white rounded-2xl shadow-sm p-8">
                 <h2 class="font-heading text-2xl text-charcoal mb-6">{{ 'checkout.delivery_title' | translate }}</h2>
+
+                <!-- Bannière adresse sauvegardée -->
+                <div *ngIf="adressePreRemplie"
+                  class="flex items-center gap-3 bg-green-50 border border-green-200 rounded-xl px-4 py-3 mb-5">
+                  <i class="pi pi-check-circle text-primary-green flex-shrink-0"></i>
+                  <p class="text-sm text-gray-600 flex-1">
+                    Adresse pré-remplie depuis <strong>votre compte</strong>. Modifiez si nécessaire.
+                  </p>
+                  <a routerLink="/compte" class="text-xs text-primary-green hover:underline font-medium flex-shrink-0">
+                    Modifier
+                  </a>
+                </div>
+
                 <div class="space-y-5">
                   <div class="flex flex-col gap-2">
                     <label class="text-sm font-medium text-charcoal">{{ 'checkout.address' | translate }}</label>
@@ -271,6 +283,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   step = 0;
   processing = false;
   stripeReady = false;
+  adressePreRemplie = false;
   private stripeCheckout: StripeEmbeddedCheckout | null = null;
   steps: MenuItem[] = [];
 
@@ -304,7 +317,6 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     private router: Router,
     private authService: AuthService,
     private http: HttpClient,
-    private utilisateursService: UtilisateursService,
     private translate: TranslateService
   ) {}
 
@@ -324,17 +336,18 @@ export class CheckoutComponent implements OnInit, OnDestroy {
       this.info.email = currentUser.email;
     }
 
-    // Pré-remplir les données complémentaires depuis GET /api/users/me
-    this.utilisateursService.getMe().subscribe({
+    // Pré-remplir adresse et téléphone depuis l'API
+    this.http.get<any>(`${environment.apiUrl}/users/me`).subscribe({
       next: (profil) => {
         if (profil.phone) this.info.phone = profil.phone;
-        if (profil.address) this.delivery.address = profil.address;
-        if (profil.city) this.delivery.city = profil.city;
-        if (profil.zip) this.delivery.zip = profil.zip;
+        if (profil.address) {
+          this.delivery.address = profil.address;
+          this.delivery.city    = profil.city  ?? '';
+          this.delivery.zip     = profil.zip   ?? '';
+          this.adressePreRemplie = true;
+        }
       },
-      error: () => {
-        // Echec silencieux : l'utilisateur remplit les champs manuellement
-      }
+      error: () => { /* l'utilisateur remplit manuellement */ }
     });
   }
 
