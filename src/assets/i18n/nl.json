@@ -263,7 +263,9 @@
     "toast_fill_info": "Vul de verplichte velden in.",
     "toast_fill_address": "Voer uw bezorgadres in.",
     "toast_error": "Fout",
-    "toast_error_detail": "Kan geen betaalsessie aanmaken. Probeer opnieuw."
+    "toast_error_detail": "Kan geen betaalsessie aanmaken. Probeer opnieuw.",
+    "guest_hint": "U kunt bestellen zonder een account aan te maken. U kunt uw account aanmaken na de betaling.",
+    "guest_login_link": "Ik heb al een account → Inloggen"
   },
   "auth": {
     "login_title": "Inloggen",
@@ -298,6 +300,12 @@
     "continue_shopping": "Verder winkelen",
     "cancel_title": "Betaling geannuleerd",
     "cancel_desc": "U heeft de betaling geannuleerd. Uw winkelwagen is bewaard.",
-    "back_cart": "Terug naar winkelwagen"
+    "back_cart": "Terug naar winkelwagen",
+    "create_account_title": "Uw account aanmaken",
+    "create_account_desc": "Uw bestelling is bevestigd! Maak een account aan om uw bestellingen te volgen en te profiteren van exclusieve voordelen.",
+    "password": "Wachtwoord",
+    "confirm_password": "Wachtwoord bevestigen",
+    "create_account_btn": "Mijn account aanmaken",
+    "skip": "Deze stap overslaan"
   }
 }

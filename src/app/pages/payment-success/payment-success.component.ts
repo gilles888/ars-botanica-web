@@ -1,12 +1,17 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, ActivatedRoute } from '@angular/router';
+import { RouterLink, ActivatedRoute, Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subscription, interval } from 'rxjs';
 import { take, switchMap, takeWhile } from 'rxjs/operators';
 import { CartService } from '../../core/services/cart.service';
+import { AuthService } from '../../core/services/auth.service';
 import { environment } from '../../../environments/environment';
 
 /** Réponse de l'API /api/payments/session/{sessionId} */
@@ -22,8 +27,10 @@ type EtatPaiement = 'chargement' | 'succes' | 'attente' | 'erreur';
 @Component({
   selector: 'app-payment-success',
   standalone: true,
-  imports: [CommonModule, RouterLink, ButtonModule, TranslateModule],
+  imports: [CommonModule, RouterLink, FormsModule, ButtonModule, InputTextModule, ToastModule, TranslateModule],
+  providers: [MessageService],
   template: `
+    <p-toast position="bottom-right"></p-toast>
     <div class="pt-20 min-h-screen bg-cream flex items-center justify-center page-enter">
       <div class="bg-white rounded-2xl shadow-sm p-12 text-center max-w-lg w-full mx-4">
 
@@ -61,6 +68,32 @@ type EtatPaiement = 'chargement' | 'succes' | 'attente' | 'erreur';
                 style="border-color: #5a8a4a; color: #5a8a4a; border-radius: 2rem; padding: 0.85rem 2rem;">
               </button>
             </a>
+          </div>
+
+          <!-- Création de compte invité -->
+          <div *ngIf="isGuest && !accountCreated" class="mt-8 bg-gray-50 rounded-2xl p-6 text-left border border-gray-100">
+            <h3 class="font-heading text-xl text-charcoal mb-2">{{ 'payment.create_account_title' | translate }}</h3>
+            <p class="text-sm text-gray-600 mb-5">{{ 'payment.create_account_desc' | translate }}</p>
+            <div class="space-y-4">
+              <input pInputText type="password" [(ngModel)]="password"
+                     [placeholder]="'payment.password' | translate"
+                     class="w-full rounded-xl" />
+              <input pInputText type="password" [(ngModel)]="confirmPassword"
+                     [placeholder]="'payment.confirm_password' | translate"
+                     class="w-full rounded-xl" />
+              <button pButton [label]="'payment.create_account_btn' | translate"
+                      (click)="convertGuestToUser()" [loading]="converting"
+                      class="w-full"
+                      style="background: #5a8a4a; border: none; border-radius: 2rem; padding: 0.85rem 2rem;">
+              </button>
+              <div class="text-center">
+                <a routerLink="/boutique" class="text-sm text-gray-500 hover:underline">{{ 'payment.skip' | translate }}</a>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="isGuest && accountCreated" class="mt-6 p-4 bg-green-50 rounded-xl border border-green-200">
+            <p class="text-sm text-green-700 font-medium">Compte créé avec succès ! Vous êtes maintenant connecté.</p>
+            <a routerLink="/mes-commandes" class="text-sm text-primary-green hover:underline mt-1 inline-block">Voir mes commandes →</a>
           </div>
         </ng-container>
 
@@ -119,12 +152,22 @@ export class PaymentSuccessComponent implements OnInit, OnDestroy {
   /** Nombre maximum de tentatives avant d'afficher l'état "attente" */
   readonly maxTentatives = 10;
 
+  isGuest = false;
+  customerEmail: string | null = null;
+  password = '';
+  confirmPassword = '';
+  converting = false;
+  accountCreated = false;
+
   private abonnements = new Subscription();
 
   constructor(
     private route: ActivatedRoute,
     private http: HttpClient,
-    private cartService: CartService
+    private cartService: CartService,
+    private authService: AuthService,
+    private messageService: MessageService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -135,6 +178,8 @@ export class PaymentSuccessComponent implements OnInit, OnDestroy {
       // Pas de session_id : on affiche un succès générique (retour direct sur la page)
       this.etat = 'succes';
       this.cartService.clearCart();
+      this.customerEmail = null;
+      this.isGuest = !this.authService.isLoggedIn();
       return;
     }
 
@@ -177,6 +222,31 @@ export class PaymentSuccessComponent implements OnInit, OnDestroy {
     this.abonnements.unsubscribe();
   }
 
+  convertGuestToUser() {
+    if (!this.password || !this.confirmPassword) {
+      this.messageService.add({ severity: 'warn', summary: 'Champs requis', detail: 'Veuillez remplir les deux champs.' });
+      return;
+    }
+    this.converting = true;
+    this.http.post<any>(`${environment.apiUrl}/auth/convert-guest`, {
+      email: this.customerEmail,
+      password: this.password,
+      confirmPassword: this.confirmPassword
+    }).subscribe({
+      next: (res: any) => {
+        this.authService.saveToken(res.accessToken);
+        this.accountCreated = true;
+        this.converting = false;
+        this.messageService.add({ severity: 'success', summary: 'Compte créé !', detail: 'Vous êtes maintenant connecté.' });
+      },
+      error: (err: any) => {
+        const msg = err?.error?.message || 'Une erreur est survenue.';
+        this.messageService.add({ severity: 'error', summary: 'Erreur', detail: msg });
+        this.converting = false;
+      }
+    });
+  }
+
   /** Vérifie si le statut est considéré comme finalisé (paiement confirmé) */
   private estStatutFinal(status: string): boolean {
     return status === 'complete' || status === 'paid' || status === 'PAID';
@@ -189,6 +259,8 @@ export class PaymentSuccessComponent implements OnInit, OnDestroy {
       this.numeroCommande = session.orderNumber ?? null;
       // Vidage du panier après confirmation du paiement
       this.cartService.clearCart();
+      this.customerEmail = session.customerEmail ?? null;
+      this.isGuest = !this.authService.isLoggedIn();
     }
   }
 }

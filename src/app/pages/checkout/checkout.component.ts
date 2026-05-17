@@ -62,6 +62,14 @@ import { loadStripe, StripeEmbeddedCheckout } from '@stripe/stripe-js';
               <!-- ── ÉTAPE 0 : Informations ─────────────── -->
               <div *ngIf="step === 0" class="bg-white rounded-2xl shadow-sm p-8">
                 <h2 class="font-heading text-2xl text-charcoal mb-6">{{ 'checkout.info_title' | translate }}</h2>
+                <div *ngIf="isGuestMode" class="mb-6 p-4 bg-blue-50 rounded-xl border border-blue-100">
+                  <p class="text-sm text-gray-700">
+                    {{ 'checkout.guest_hint' | translate }}
+                  </p>
+                  <a routerLink="/connexion" [queryParams]="{returnUrl: '/commande'}" class="text-sm text-blue-600 hover:underline font-medium mt-1 inline-block">
+                    {{ 'checkout.guest_login_link' | translate }}
+                  </a>
+                </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div class="flex flex-col gap-2">
                     <label class="text-sm font-medium text-charcoal">{{ 'checkout.firstname' | translate }}</label>
@@ -284,6 +292,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   processing = false;
   stripeReady = false;
   adressePreRemplie = false;
+  isGuestMode = false;
   private stripeCheckout: StripeEmbeddedCheckout | null = null;
   steps: MenuItem[] = [];
 
@@ -321,34 +330,30 @@ export class CheckoutComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    if (!this.authService.isLoggedIn()) {
-      this.router.navigate(['/connexion'], { queryParams: { returnUrl: '/commande' } });
-      return;
-    }
+    this.isGuestMode = !this.authService.isLoggedIn();
     this.buildSteps();
     this.langSub.add(this.translate.onLangChange.subscribe(() => this.buildSteps()));
 
-    // Pré-remplir les champs depuis le token JWT (disponible immédiatement)
-    const currentUser = this.authService.currentUser$.value;
-    if (currentUser) {
-      this.info.firstName = currentUser.firstName;
-      this.info.lastName = currentUser.lastName;
-      this.info.email = currentUser.email;
+    if (!this.isGuestMode) {
+      const currentUser = this.authService.currentUser$.value;
+      if (currentUser) {
+        this.info.firstName = currentUser.firstName;
+        this.info.lastName = currentUser.lastName;
+        this.info.email = currentUser.email;
+      }
+      this.http.get<any>(`${environment.apiUrl}/users/me`).subscribe({
+        next: (profil) => {
+          if (profil.phone) this.info.phone = profil.phone;
+          if (profil.address) {
+            this.delivery.address = profil.address;
+            this.delivery.city    = profil.city  ?? '';
+            this.delivery.zip     = profil.zip   ?? '';
+            this.adressePreRemplie = true;
+          }
+        },
+        error: () => {}
+      });
     }
-
-    // Pré-remplir adresse et téléphone depuis l'API
-    this.http.get<any>(`${environment.apiUrl}/users/me`).subscribe({
-      next: (profil) => {
-        if (profil.phone) this.info.phone = profil.phone;
-        if (profil.address) {
-          this.delivery.address = profil.address;
-          this.delivery.city    = profil.city  ?? '';
-          this.delivery.zip     = profil.zip   ?? '';
-          this.adressePreRemplie = true;
-        }
-      },
-      error: () => { /* l'utilisateur remplit manuellement */ }
-    });
   }
 
   ngOnDestroy() {
@@ -386,7 +391,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
   async initStripeCheckout() {
     this.processing = true;
-    const payload = {
+    const payload: any = {
       deliveryAddress: this.delivery.address,
       deliveryZip: this.delivery.zip,
       deliveryCity: this.delivery.city,
@@ -398,6 +403,14 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         variantId: item.variant.id
       }))
     };
+
+    if (this.isGuestMode) {
+      payload.guestEmail = this.info.email;
+      payload.guestFirstName = this.info.firstName;
+      payload.guestLastName = this.info.lastName;
+      payload.guestPhone = this.info.phone;
+    }
+
     this.http.post<{ clientSecret: string; sessionId: string; orderNumber: string }>(
       `${environment.apiUrl}/payments/checkout`, payload
     ).subscribe({

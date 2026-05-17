@@ -47,6 +47,10 @@ export class AuthService {
     return localStorage.getItem(this.TOKEN_KEY);
   }
 
+  saveToken(token: string): void {
+    localStorage.setItem(this.TOKEN_KEY, token);
+  }
+
   private mapToAuthUser(response: AuthResponse): AuthUser {
     return {
       userId: response.userId ?? 0,

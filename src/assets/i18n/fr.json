@@ -263,7 +263,9 @@
     "toast_fill_info": "Veuillez remplir les champs obligatoires.",
     "toast_fill_address": "Veuillez saisir votre adresse de livraison.",
     "toast_error": "Erreur",
-    "toast_error_detail": "Impossible de créer la session de paiement. Veuillez réessayer."
+    "toast_error_detail": "Impossible de créer la session de paiement. Veuillez réessayer.",
+    "guest_hint": "Vous pouvez passer commande sans créer de compte. Vous pourrez créer votre compte après le paiement.",
+    "guest_login_link": "J'ai déjà un compte → Me connecter"
   },
   "auth": {
     "login_title": "Connexion",
@@ -298,6 +300,12 @@
     "continue_shopping": "Continuer mes achats",
     "cancel_title": "Paiement annulé",
     "cancel_desc": "Vous avez annulé le paiement. Votre panier a été conservé.",
-    "back_cart": "Retour au panier"
+    "back_cart": "Retour au panier",
+    "create_account_title": "Créer votre compte",
+    "create_account_desc": "Votre commande a été validée ! Créez un compte pour suivre vos commandes et profiter d'avantages exclusifs.",
+    "password": "Mot de passe",
+    "confirm_password": "Confirmer le mot de passe",
+    "create_account_btn": "Créer mon compte",
+    "skip": "Passer cette étape"
   }
 }
